@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// User Role Enum
+enum Role {
+  LEARNER
+  INSTRUCTOR
+  ADMIN
+}
+
+// Course Publishing Lifecycle Status
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+// Enrollment Status
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+// Foundational User Model
+// TODO: expand in Phase 6 PRD data modeling (profiles, avatars, instructor bios, auth provider metadata)
+model User {
+  id          String       @id @default(uuid())
+  email       String       @unique
+  clerkId     String?      @unique
+  firstName   String?
+  lastName    String?
+  role        Role         @default(LEARNER)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  courses     Course[]     @relation("InstructorCourses")
+  enrollments Enrolment[]
+
+  @@map("users")
+}
+
+// Foundational Course Model
+// TODO: expand in Phase 6 PRD data modeling (modules, lessons, video assets, quizzes, pricing tiers)
+model Course {
+  id           String       @id @default(uuid())
+  title        String
+  slug         String       @unique
+  description  String?
+  price        Float        @default(0.0)
+  currency     String       @default("NGN")
+  status       CourseStatus @default(DRAFT)
+  instructorId String
+  instructor   User         @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: Cascade)
+  enrollments  Enrolment[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@map("courses")
+}
+
+// Foundational Enrolment Model
+// TODO: expand in Phase 6 PRD data modeling (lesson progress tracking, quiz scores, certificates)
+model Enrolment {
+  id                 String           @id @default(uuid())
+  userId             String
+  courseId           String
+  user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course             Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  status             EnrollmentStatus @default(ACTIVE)
+  progressPercentage Float            @default(0.0)
+  enrolledAt         DateTime         @default(now())
+  completedAt        DateTime?
+
+  @@unique([userId, courseId])
+  @@map("enrolments")
+}

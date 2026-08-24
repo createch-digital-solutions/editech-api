@@ -1,98 +1,95 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Createch Learning Platform — Backend REST API (`createch-api`)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This repo is independently installable and runnable. It does not depend on any other Createch repo at build or install time — only at runtime, over HTTP, against `NEXT_PUBLIC_API_BASE_URL` / CORS-allowed origins.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+> **Context Pointer**: For full architectural rules and AI agent boundaries, see [CLAUDE.md](./CLAUDE.md). For deferred backlog items, see [TODO.md](./TODO.md).
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Tech Stack
+- **Framework**: NestJS 11 + TypeScript + Express
+- **Database**: PostgreSQL with Prisma ORM (owned completely inside this repo)
+- **API Documentation**: OpenAPI / Swagger live at `/docs`
+- **Auth**: Clerk (`@clerk/backend`, `svix` webhook signature verification)
+- **Search Engine**: Meilisearch (dockerized)
+- **Testing**: Jest module unit/smoke tests & integration tests in `test/`
 
-## Project setup
+---
 
+## Prerequisites
+- Node.js >= 20.0.0
+- pnpm >= 9.0.0
+- Docker & Docker Compose (for local PostgreSQL & Meilisearch)
+
+---
+
+## Getting Started
+
+### 1. Installation
 ```bash
-$ pnpm install
+pnpm install
 ```
 
-## Compile and run the project
-
+### 2. Configure Environment
 ```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+cp .env.example .env
 ```
 
-## Run tests
-
+### 3. Start Local Infrastructure
 ```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+docker compose up -d
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
+### 4. Database Setup & Migrations
 ```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+# Generate Prisma Client
+pnpm prisma:generate
+
+# Run Migrations
+pnpm prisma:migrate
+
+# Seed Database
+pnpm prisma:seed
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### 5. Run Development Server
+```bash
+pnpm start:dev
+```
+- API Base: [http://localhost:5000](http://localhost:5000)
+- OpenAPI / Swagger Docs: [http://localhost:5000/docs](http://localhost:5000/docs)
+- Health Check: [http://localhost:5000/health](http://localhost:5000/health)
 
-## Resources
+---
 
-Check out a few resources that may come in handy when working with NestJS:
+## Testing & Quality Commands
+```bash
+# Run unit & module smoke tests
+pnpm test
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+# Run e2e / integration tests
+pnpm test:e2e
 
-## Support
+# Run linter
+pnpm lint
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+# Build for production
+pnpm build
+```
 
-## Stay in touch
+---
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Shared Contracts & Types Note
+Any type or contract that both `createch-web` and `createch-api` need is documented by the OpenAPI spec at `/docs`.
 
-## License
+Once the API contracts stabilize, schemas will be exported and published as an independent, versioned npm package (e.g. `@createch/api-contracts`) and installed as a normal external dependency — never as a local path/workspace reference.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+---
+
+## What is NOT Built Yet (MVP Scope)
+The following are deferred until Phase 6+ PRD implementation:
+- AI Course Builder logic & curriculum generation pipelines (stub client wrappers only)
+- AI Tutor live streaming responses (stub client wrappers only)
+- Payment charges & webhook processing for Paystack and Stripe (stub client wrappers only)
+- Gamification XP badges, quizzes grading, and PDF certificate generation
+- Community forum discussion threads & moderation
