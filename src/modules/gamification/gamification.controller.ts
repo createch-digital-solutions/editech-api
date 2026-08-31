@@ -9,7 +9,10 @@ export class GamificationController {
 
   @Get('health')
   @ApiOperation({ summary: 'Gamification module health check' })
-  @ApiResponse({ status: 200, description: 'Gamification module is operational' })
+  @ApiResponse({
+    status: 200,
+    description: 'Gamification module is operational',
+  })
   getHealth() {
     return this.gamificationService.getHealth();
   }

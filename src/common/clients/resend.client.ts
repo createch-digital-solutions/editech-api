@@ -22,7 +22,9 @@ export class ResendClientWrapper {
     if (!this.client) {
       throw new Error('Resend client is not configured or in stub mode.');
     }
-    throw new Error('Resend email delivery is not implemented yet. Scheduled for Phase 6.');
+    throw new Error(
+      'Resend email delivery is not implemented yet. Scheduled for Phase 6.',
+    );
   }
 }
 

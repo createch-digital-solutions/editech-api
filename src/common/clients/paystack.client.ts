@@ -16,11 +16,17 @@ export class PaystackClientWrapper {
     email: string;
     amount: number; // in kobo
     reference: string;
-  }): Promise<{ authorization_url: string; access_code: string; reference: string }> {
+  }): Promise<{
+    authorization_url: string;
+    access_code: string;
+    reference: string;
+  }> {
     if (!this.secretKey) {
       throw new Error('Paystack client is not configured or in stub mode.');
     }
-    throw new Error('Paystack transactions are not implemented yet. Scheduled for Phase 6.');
+    throw new Error(
+      'Paystack transactions are not implemented yet. Scheduled for Phase 6.',
+    );
   }
 }
 

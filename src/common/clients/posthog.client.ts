@@ -15,7 +15,11 @@ export class PostHogClientWrapper {
   }
 
   // TODO: Capture server-side events in Phase 6
-  capture(params: { distinctId: string; event: string; properties?: Record<string, unknown> }): void {
+  capture(params: {
+    distinctId: string;
+    event: string;
+    properties?: Record<string, unknown>;
+  }): void {
     if (this.client) {
       this.client.capture(params);
     }

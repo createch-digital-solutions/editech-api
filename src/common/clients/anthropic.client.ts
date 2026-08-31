@@ -18,7 +18,9 @@ export class AnthropicClientWrapper {
     if (!this.client) {
       throw new Error('Anthropic client is not configured or in stub mode.');
     }
-    throw new Error('Anthropic AI tutoring is not implemented yet. Scheduled for Phase 6.');
+    throw new Error(
+      'Anthropic AI tutoring is not implemented yet. Scheduled for Phase 6.',
+    );
   }
 }
 

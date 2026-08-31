@@ -25,7 +25,7 @@ async function bootstrap() {
       whitelist: true,
       transform: true,
       forbidNonWhitelisted: true,
-    })
+    }),
   );
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalInterceptors(new LoggingInterceptor());
@@ -34,7 +34,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('Createch Learning Platform REST API')
     .setDescription(
-      'Contract and documentation for the Createch learning marketplace backend services.'
+      'Contract and documentation for the Createch learning marketplace backend services.',
     )
     .setVersion('1.0')
     .addBearerAuth()

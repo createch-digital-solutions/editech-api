@@ -20,7 +20,7 @@ export default tseslint.config(
       sourceType: 'module',
       parserOptions: {
         projectService: true,
-        tsconfigRootDir: import.meta.url,
+        tsconfigRootDir: import.meta.dirname,
       },
     },
   },

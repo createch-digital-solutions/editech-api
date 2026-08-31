@@ -29,7 +29,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     this.logger.error(
       `HTTP ${status} on ${request.method} ${request.url}`,
-      exception instanceof Error ? exception.stack : JSON.stringify(exception)
+      exception instanceof Error ? exception.stack : JSON.stringify(exception),
     );
 
     response.status(status).json({

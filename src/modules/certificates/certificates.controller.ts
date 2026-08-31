@@ -9,7 +9,10 @@ export class CertificatesController {
 
   @Get('health')
   @ApiOperation({ summary: 'Certificates module health check' })
-  @ApiResponse({ status: 200, description: 'Certificates module is operational' })
+  @ApiResponse({
+    status: 200,
+    description: 'Certificates module is operational',
+  })
   getHealth() {
     return this.certificatesService.getHealth();
   }

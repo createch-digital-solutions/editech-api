@@ -18,7 +18,9 @@ export class OpenAiClientWrapper {
     if (!this.client) {
       throw new Error('OpenAI client is not configured or in stub mode.');
     }
-    throw new Error('OpenAI course generation is not implemented yet. Scheduled for Phase 6.');
+    throw new Error(
+      'OpenAI course generation is not implemented yet. Scheduled for Phase 6.',
+    );
   }
 }
 

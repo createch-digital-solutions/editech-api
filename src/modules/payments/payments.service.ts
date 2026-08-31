@@ -9,12 +9,20 @@ export class PaymentsService {
   }
 
   // TODO: Connect Paystack NGN checkout in Phase 6
-  async initPaystack(params: { email: string; amount: number; reference: string }) {
+  async initPaystack(params: {
+    email: string;
+    amount: number;
+    reference: string;
+  }) {
     return paystackClient.initializeTransaction(params);
   }
 
   // TODO: Connect Stripe USD checkout in Phase 6
-  async initStripe(params: { amount: number; currency: string; courseId: string }) {
+  async initStripe(params: {
+    amount: number;
+    currency: string;
+    courseId: string;
+  }) {
     return stripeClient.createCheckoutSession(params);
   }
 }

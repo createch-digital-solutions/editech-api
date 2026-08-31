@@ -22,7 +22,10 @@ export class AuthService {
     try {
       const { Webhook } = await import('svix');
       const wh = new Webhook(webhookSecret);
-      const evt = wh.verify(payload, headers) as { type: string; data: unknown };
+      const evt = wh.verify(payload, headers) as {
+        type: string;
+        data: unknown;
+      };
       this.logger.log(`Received Clerk Webhook: ${evt.type}`);
 
       // TODO: Handle user.created, user.updated, user.deleted sync into Prisma in Phase 6

@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Headers, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Headers,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthService } from './auth.service.js';
 
@@ -16,13 +24,15 @@ export class AuthController {
 
   @Post('webhook')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Clerk Webhook Endpoint (Signature verification wired)' })
+  @ApiOperation({
+    summary: 'Clerk Webhook Endpoint (Signature verification wired)',
+  })
   @ApiResponse({ status: 200, description: 'Webhook received & verified' })
   async handleWebhook(
     @Body() body: Record<string, unknown>,
     @Headers('svix-id') svixId: string,
     @Headers('svix-timestamp') svixTimestamp: string,
-    @Headers('svix-signature') svixSignature: string
+    @Headers('svix-signature') svixSignature: string,
   ) {
     return this.authService.handleClerkWebhook(JSON.stringify(body), {
       'svix-id': svixId,

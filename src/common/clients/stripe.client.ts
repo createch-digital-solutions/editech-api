@@ -24,7 +24,9 @@ export class StripeClientWrapper {
     if (!this.client) {
       throw new Error('Stripe client is not configured or in stub mode.');
     }
-    throw new Error('Stripe checkout is not implemented yet. Scheduled for Phase 6.');
+    throw new Error(
+      'Stripe checkout is not implemented yet. Scheduled for Phase 6.',
+    );
   }
 }
 
