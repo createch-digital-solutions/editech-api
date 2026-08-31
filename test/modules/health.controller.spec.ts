@@ -1,4 +1,3 @@
-import { jest } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
 import { HealthController } from '../../src/modules/health/health.controller.js';
 import { HealthService } from '../../src/modules/health/health.service.js';
@@ -15,7 +14,7 @@ describe('HealthController', () => {
         {
           provide: PrismaService,
           useValue: {
-            $queryRaw: jest.fn().mockResolvedValue([{ '1': 1 }]),
+            $queryRaw: () => Promise.resolve([{ '1': 1 }]),
           },
         },
       ],
