@@ -14,7 +14,7 @@ export class OpenAiClientWrapper {
   }
 
   // TODO: Implement OpenAI course outline and lesson generation in Phase 6
-  async generateCourseOutline(prompt: string): Promise<string> {
+  async generateCourseOutline(_prompt: string): Promise<string> {
     if (!this.client) {
       throw new Error('OpenAI client is not configured or in stub mode.');
     }

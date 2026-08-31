@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
 import { HealthController } from '../../src/modules/health/health.controller.js';
 import { HealthService } from '../../src/modules/health/health.service.js';
@@ -5,7 +6,6 @@ import { PrismaService } from '../../src/modules/prisma/prisma.service.js';
 
 describe('HealthController', () => {
   let controller: HealthController;
-  let service: HealthService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -22,7 +22,6 @@ describe('HealthController', () => {
     }).compile();
 
     controller = module.get<HealthController>(HealthController);
-    service = module.get<HealthService>(HealthService);
   });
 
   it('should be defined', () => {

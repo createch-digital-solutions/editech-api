@@ -26,6 +26,9 @@ describe('InstructorController', () => {
   });
 
   it('should return health status', () => {
-    expect(controller.getHealth()).toEqual({ status: 'ok', module: 'instructor' });
+    expect(controller.getHealth()).toEqual({
+      status: 'ok',
+      module: 'instructor',
+    });
   });
 });

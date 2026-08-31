@@ -26,6 +26,9 @@ describe('GamificationController', () => {
   });
 
   it('should return health status', () => {
-    expect(controller.getHealth()).toEqual({ status: 'ok', module: 'gamification' });
+    expect(controller.getHealth()).toEqual({
+      status: 'ok',
+      module: 'gamification',
+    });
   });
 });

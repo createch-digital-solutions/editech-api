@@ -26,6 +26,9 @@ describe('CertificatesController', () => {
   });
 
   it('should return health status', () => {
-    expect(controller.getHealth()).toEqual({ status: 'ok', module: 'certificates' });
+    expect(controller.getHealth()).toEqual({
+      status: 'ok',
+      module: 'certificates',
+    });
   });
 });

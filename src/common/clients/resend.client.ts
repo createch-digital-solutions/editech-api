@@ -14,7 +14,7 @@ export class ResendClientWrapper {
   }
 
   // TODO: Implement transactional email sending in Phase 6
-  async sendEmail(params: {
+  async sendEmail(_params: {
     to: string;
     subject: string;
     html: string;

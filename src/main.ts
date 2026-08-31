@@ -48,4 +48,4 @@ async function bootstrap() {
   logger.log(`Createch API server running on port: ${port}`);
   logger.log(`OpenAPI documentation live at: http://localhost:${port}/docs`);
 }
-bootstrap();
+void bootstrap();

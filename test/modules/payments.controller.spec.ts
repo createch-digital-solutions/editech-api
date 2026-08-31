@@ -19,6 +19,9 @@ describe('PaymentsController', () => {
   });
 
   it('should return health status', () => {
-    expect(controller.getHealth()).toEqual({ status: 'ok', module: 'payments' });
+    expect(controller.getHealth()).toEqual({
+      status: 'ok',
+      module: 'payments',
+    });
   });
 });

@@ -16,7 +16,7 @@ export class StripeClientWrapper {
   }
 
   // TODO: Implement Stripe checkout session creation in Phase 6
-  async createCheckoutSession(params: {
+  async createCheckoutSession(_params: {
     amount: number;
     currency: string;
     courseId: string;

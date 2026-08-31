@@ -26,6 +26,9 @@ describe('CommunityController', () => {
   });
 
   it('should return health status', () => {
-    expect(controller.getHealth()).toEqual({ status: 'ok', module: 'community' });
+    expect(controller.getHealth()).toEqual({
+      status: 'ok',
+      module: 'community',
+    });
   });
 });

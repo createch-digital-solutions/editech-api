@@ -3,6 +3,11 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module.js';
 
+interface HealthResponseBody {
+  status: string;
+  services: Record<string, unknown>;
+}
+
 describe('Health E2E Test', () => {
   let app: INestApplication;
 
@@ -16,10 +21,10 @@ describe('Health E2E Test', () => {
   });
 
   it('/health (GET)', () => {
-    return request(app.getHttpServer())
+    return request(app.getHttpServer() as Parameters<typeof request>[0])
       .get('/health')
       .expect(200)
-      .expect((res) => {
+      .expect((res: { body: HealthResponseBody }) => {
         expect(res.body.status).toBe('ok');
         expect(res.body.services).toBeDefined();
       });

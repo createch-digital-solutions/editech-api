@@ -3,9 +3,10 @@
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "resolvePackageJsonExports": true,
-    "types": ["node"],
+    "types": ["node", "jest"],
     "esModuleInterop": true,
     "isolatedModules": true,
+    "noEmit": true,
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -14,7 +15,7 @@
     "target": "ES2023",
     "sourceMap": true,
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": "./",
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
@@ -23,6 +24,6 @@
     "strictBindCallApply": true,
     "noFallthroughCasesInSwitch": true
   },
-   "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "test/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

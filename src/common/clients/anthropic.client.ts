@@ -14,7 +14,7 @@ export class AnthropicClientWrapper {
   }
 
   // TODO: Implement Claude conversational AI tutoring streaming in Phase 6
-  async streamTutorResponse(messages: unknown[]): Promise<never> {
+  async streamTutorResponse(_messages: unknown[]): Promise<never> {
     if (!this.client) {
       throw new Error('Anthropic client is not configured or in stub mode.');
     }

@@ -12,7 +12,7 @@ export class PaystackClientWrapper {
   }
 
   // TODO: Implement Paystack charge initialization & webhook verification in Phase 6
-  async initializeTransaction(params: {
+  async initializeTransaction(_params: {
     email: string;
     amount: number; // in kobo
     reference: string;
