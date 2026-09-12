@@ -15,8 +15,10 @@ import { CertificatesModule } from './modules/certificates/certificates.module.j
 import { PaymentsModule } from './modules/payments/payments.module.js';
 import { CommunityModule } from './modules/community/community.module.js';
 import { AdminModule } from './modules/admin/admin.module.js';
+import { AppController } from './app.controller.js';
 
 @Module({
+  controllers: [AppController],
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
