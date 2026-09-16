@@ -4,13 +4,15 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module.js';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter.js';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor.js';
+import { TransformInterceptor } from './common/interceptors/transform.interceptor.js';
 import { initServerSentry } from './common/clients/sentry.client.js';
 
 async function bootstrap() {
   // Initialize Sentry server telemetry
   initServerSentry();
 
-  const app = await NestFactory.create(AppModule);
+  // Enable rawBody preservation for Svix / Paystack / Stripe webhooks
+  const app = await NestFactory.create(AppModule, { rawBody: true });
   const logger = new Logger('Bootstrap');
 
   // Enable CORS
@@ -19,7 +21,10 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Global Interceptors and Filters
+  // Global Routing Prefix (Phase 15 Section 2.2)
+  app.setGlobalPrefix('api/v1');
+
+  // Global Pipes, Filters, and Interceptors
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -28,7 +33,10 @@ async function bootstrap() {
     }),
   );
   app.useGlobalFilters(new AllExceptionsFilter());
-  app.useGlobalInterceptors(new LoggingInterceptor());
+  app.useGlobalInterceptors(
+    new LoggingInterceptor(),
+    new TransformInterceptor(),
+  );
 
   // Swagger / OpenAPI Specification
   const config = new DocumentBuilder()
@@ -38,6 +46,7 @@ async function bootstrap() {
     )
     .setVersion('1.0')
     .addBearerAuth()
+    .addServer('/api/v1')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
@@ -46,6 +55,7 @@ async function bootstrap() {
   const port = process.env.PORT ?? 5000;
   await app.listen(port);
   logger.log(`Createch API server running on port: ${port}`);
+  logger.log(`API base route: http://localhost:${port}/api/v1`);
   logger.log(`OpenAPI documentation live at: http://localhost:${port}/docs`);
 }
 void bootstrap();

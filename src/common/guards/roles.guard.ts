@@ -1,15 +1,18 @@
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Role } from '@prisma/client';
+import { Request } from 'express';
 import { ROLES_KEY } from '../decorators/roles.decorator.js';
 
-/**
- * Roles Guard (Stub)
- * Full Clerk JWT role claims verification deferred to Phase 6.
- */
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  constructor(private readonly reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
     const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
@@ -17,11 +20,34 @@ export class RolesGuard implements CanActivate {
       context.getClass(),
     ]);
 
+    // If endpoint has no role requirements, let it pass
     if (!requiredRoles || requiredRoles.length === 0) {
       return true;
     }
 
-    // TODO: Verify request user role from Clerk session claims in Phase 6
+    const request = context.switchToHttp().getRequest<Request>();
+    const user = request.user;
+
+    if (!user) {
+      throw new UnauthorizedException({
+        code: 'UNAUTHORIZED',
+        message: 'Authentication required to access this resource',
+      });
+    }
+
+    const hasRequiredRole = requiredRoles.includes(user.role);
+
+    if (!hasRequiredRole) {
+      throw new ForbiddenException({
+        code: 'FORBIDDEN',
+        message: 'Valid auth but insufficient role or permissions',
+        details: {
+          userRole: user.role,
+          requiredRoles,
+        },
+      });
+    }
+
     return true;
   }
 }
