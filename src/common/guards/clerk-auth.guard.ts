@@ -74,7 +74,11 @@ export class ClerkAuthGuard implements CanActivate {
           `${clerkId}@createch.placeholder`;
         const firstName = (claims.first_name as string) || 'Createch';
         const lastName = (claims.last_name as string) || 'User';
-        const role = (claims.role as Role) || Role.LEARNER;
+        const role =
+          (claims.role as Role) ||
+          (claims.public_metadata as { role?: Role })?.role ||
+          (claims.publicMetadata as { role?: Role })?.role ||
+          Role.LEARNER;
 
         user = await this.prisma.user.create({
           data: {
