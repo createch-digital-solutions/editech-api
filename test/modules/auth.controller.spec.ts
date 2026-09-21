@@ -39,6 +39,12 @@ describe('AuthController', () => {
               role: Role.INSTRUCTOR,
             }),
             handleClerkWebhook: jest.fn().mockResolvedValue({ synced: true }),
+            provisionUser: jest.fn().mockResolvedValue({
+              success: true,
+              message: 'User provisioned successfully',
+              role: Role.LEARNER,
+              status: UserStatus.ACTIVE,
+            }),
           },
         },
         {
@@ -58,6 +64,20 @@ describe('AuthController', () => {
 
   it('should return health status', () => {
     expect(controller.getHealth()).toEqual({ status: 'ok', module: 'auth' });
+  });
+
+  it('should provision user on provision', async () => {
+    const result = await controller.provision({
+      clerkId: 'user_clerk_123',
+    });
+
+    expect(result).toEqual({
+      success: true,
+      message: 'User provisioned successfully',
+      role: Role.LEARNER,
+      status: UserStatus.ACTIVE,
+    });
+    expect(authService.provisionUser).toHaveBeenCalledWith('user_clerk_123');
   });
 
   it('should return current user profile on getMe', async () => {

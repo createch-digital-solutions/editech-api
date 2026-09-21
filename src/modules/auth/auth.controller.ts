@@ -24,6 +24,7 @@ import { Roles } from '../../common/decorators/roles.decorator.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import type { AuthenticatedUser } from '../../common/decorators/current-user.decorator.js';
 import { UpdateRoleDto } from './dto/update-role.dto.js';
+import { ProvisionUserDto } from './dto/provision-user.dto.js';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -36,6 +37,29 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Auth module is operational' })
   getHealth() {
     return this.authService.getHealth();
+  }
+
+  @Post('provision')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'JIT provision and synchronize user before sign-up completion',
+  })
+  @ApiResponse({
+    status: 200,
+    description:
+      'User provisioned or already exists in database and synced to Clerk',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid clerkId format or email required in Clerk',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User not found in Clerk',
+  })
+  async provision(@Body() dto: ProvisionUserDto) {
+    return this.authService.provisionUser(dto.clerkId);
   }
 
   @Post('webhook/clerk')
