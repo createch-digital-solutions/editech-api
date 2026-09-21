@@ -51,12 +51,13 @@ export class ClerkAuthGuard implements CanActivate {
       }
 
       const verified = await verifyToken(token, { secretKey });
-      const clerkId = verified.sub;
+      const claims = verified as Record<string, unknown>;
+      const clerkId = (claims.id as string) || verified.sub;
 
       if (!clerkId) {
         throw new UnauthorizedException({
           code: 'UNAUTHORIZED',
-          message: 'Token does not contain a valid subject claim',
+          message: 'Token does not contain a valid user id',
         });
       }
 
@@ -67,18 +68,12 @@ export class ClerkAuthGuard implements CanActivate {
 
       // Auto-provision if user exists in Clerk but hasn't synced via webhook yet
       if (!user) {
-        const claims = verified as Record<string, unknown>;
         const email =
-          (claims.email as string) ||
-          (claims.primary_email_address as string) ||
-          `${clerkId}@createch.placeholder`;
-        const firstName = (claims.first_name as string) || 'Createch';
-        const lastName = (claims.last_name as string) || 'User';
-        const role =
-          (claims.role as Role) ||
-          (claims.public_metadata as { role?: Role })?.role ||
-          (claims.publicMetadata as { role?: Role })?.role ||
-          Role.LEARNER;
+          (claims.email as string) || `${clerkId}@createch.placeholder`;
+        const firstName = (claims.firstName as string) || '';
+        const lastName = (claims.lastName as string) || '';
+        const rawRole = (claims.role as string)?.toUpperCase();
+        const role = rawRole === 'INSTRUCTOR' ? Role.INSTRUCTOR : Role.LEARNER;
 
         user = await this.prisma.user.create({
           data: {
@@ -101,6 +96,15 @@ export class ClerkAuthGuard implements CanActivate {
                 longestStreak: 0,
               },
             },
+            ...(role === Role.INSTRUCTOR
+              ? {
+                  instructorProfile: {
+                    create: {
+                      status: 'PENDING',
+                    },
+                  },
+                }
+              : {}),
           },
         });
       }
