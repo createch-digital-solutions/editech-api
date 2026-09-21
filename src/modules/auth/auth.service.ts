@@ -21,7 +21,10 @@ interface ClerkWebhookUserData {
   last_name?: string | null;
   image_url?: string | null;
   public_metadata?: {
-    role?: Role;
+    role?: string;
+  };
+  unsafe_metadata?: {
+    role?: string;
   };
 }
 
@@ -96,6 +99,21 @@ export class AuthService {
           return { synced: true, message: 'User already exists' };
         }
 
+        // SECURITY: ADMIN role is strictly prohibited from webhook assignment.
+        // It can only be assigned directly in the database or via an authenticated Admin API endpoint.
+        const rawRole =
+          data.public_metadata?.role || data.unsafe_metadata?.role;
+        let role: Role = Role.LEARNER;
+        if (typeof rawRole === 'string') {
+          const upper = rawRole.toUpperCase();
+          if (upper === 'INSTRUCTOR') {
+            role = Role.INSTRUCTOR;
+          }
+          // Any attempt to set ADMIN or invalid roles is ignored and defaults to LEARNER.
+        }
+
+        const status = UserStatus.ACTIVE;
+
         await this.prisma.user.create({
           data: {
             clerkId,
@@ -103,8 +121,8 @@ export class AuthService {
             firstName: data.first_name || '',
             lastName: data.last_name || '',
             avatarUrl: data.image_url || null,
-            role: data.public_metadata?.role || Role.LEARNER,
-            status: UserStatus.ACTIVE,
+            role,
+            status,
             learnerProfile: {
               create: {
                 totalXp: 0,
@@ -118,10 +136,38 @@ export class AuthService {
                 longestStreak: 0,
               },
             },
+            ...(role === Role.INSTRUCTOR
+              ? {
+                  instructorProfile: {
+                    create: {
+                      status: 'PENDING',
+                    },
+                  },
+                }
+              : {}),
           },
         });
 
-        this.logger.log(`Created user ${primaryEmail} from Clerk webhook`);
+        // Ensure role and status are written to Clerk publicMetadata so JWT tokens contain them
+        try {
+          await this.clerk.users.updateUserMetadata(clerkId, {
+            publicMetadata: {
+              role,
+              status,
+            },
+          });
+          this.logger.log(
+            `Synced role ${role} and status ${status} to Clerk publicMetadata for ${clerkId}`,
+          );
+        } catch (syncErr) {
+          this.logger.warn(
+            `Could not sync metadata to Clerk for user ${clerkId}: ${syncErr}`,
+          );
+        }
+
+        this.logger.log(
+          `Created user ${primaryEmail} from Clerk webhook with role ${role}`,
+        );
         return { synced: true };
       }
 
@@ -129,6 +175,18 @@ export class AuthService {
         const data = evt.data as ClerkWebhookUserData;
         const clerkId = data.id;
         const primaryEmail = data.email_addresses?.[0]?.email_address;
+        const updatedRawRole =
+          data.public_metadata?.role || data.unsafe_metadata?.role;
+        let updatedRole: Role | undefined;
+        if (typeof updatedRawRole === 'string') {
+          const upper = updatedRawRole.toUpperCase();
+          // SECURITY: Only allow safe role updates via webhook; never allow escalation to ADMIN.
+          if (upper === 'INSTRUCTOR') {
+            updatedRole = Role.INSTRUCTOR;
+          } else if (upper === 'LEARNER') {
+            updatedRole = Role.LEARNER;
+          }
+        }
 
         await this.prisma.user.updateMany({
           where: { clerkId },
@@ -137,9 +195,7 @@ export class AuthService {
             firstName: data.first_name || '',
             lastName: data.last_name || '',
             avatarUrl: data.image_url || null,
-            ...(data.public_metadata?.role
-              ? { role: data.public_metadata.role }
-              : {}),
+            ...(updatedRole ? { role: updatedRole } : {}),
           },
         });
 

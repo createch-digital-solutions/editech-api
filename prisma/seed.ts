@@ -1,4 +1,3 @@
-import { PrismaClient, Role } from '@prisma/client';
 import { PrismaClient, Role, UserStatus, SkillLevel, InstructorStatus, CourseStatus, CourseLevel, OutcomeTag, LessonType } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 
@@ -13,7 +12,7 @@ async function main() {
   console.log('🌱 Seeding initial Phase 13 database design data...');
 
   // TODO: Expand seed data with full demo courses and curricula in Phase 6
-  const dummyUser = await prisma.user.upsert({
+  // const dummyUser = await prisma.user.upsert({
   // 1. Seed XP Configuration
   const xpConfigs = [
     { action: 'LESSON_COMPLETE', xpValue: 50 },
@@ -83,13 +82,13 @@ async function main() {
       firstName: 'Createch',
       lastName: 'Admin',
       role: Role.ADMIN,
-      clerkId: 'user_dummy_admin_seed',
+      // clerkId: 'user_dummy_admin_seed',
       status: UserStatus.ACTIVE,
     },
   });
   console.log(`✓ Seeded admin user: ${admin.email}`);
 
-  console.log(`Seeded dummy user: ${dummyUser.email} (${dummyUser.id})`);
+  // console.log(`Seeded dummy user: ${dummyUser.email} (${dummyUser.id})`);
   // 4. Seed Instructor User & Profile
   const instructor = await prisma.user.upsert({
     where: { email: 'instructor@createch.example.com' },
@@ -184,6 +183,7 @@ async function main() {
                 create: [
                   {
                     title: '1.1 Decoupling Identity with Clerk and NestJS',
+                    courseId: "dup_course_id",
                     position: 1,
                     type: LessonType.VIDEO,
                     videoUrl: 'https://cdn.createch.example.com/videos/lesson1.mp4',
@@ -194,6 +194,7 @@ async function main() {
                   },
                   {
                     title: '1.2 Database Design & High-Performance UUIDv7',
+                    courseId: "dup_course_id",
                     position: 2,
                     type: LessonType.VIDEO,
                     videoUrl: 'https://cdn.createch.example.com/videos/lesson2.mp4',
