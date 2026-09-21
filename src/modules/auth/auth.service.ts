@@ -21,10 +21,10 @@ interface ClerkWebhookUserData {
   last_name?: string | null;
   image_url?: string | null;
   public_metadata?: {
-    role?: Role | string;
+    role?: string;
   };
   unsafe_metadata?: {
-    role?: Role | string;
+    role?: string;
   };
 }
 
@@ -156,12 +156,18 @@ export class AuthService {
               status,
             },
           });
-          this.logger.log(`Synced role ${role} and status ${status} to Clerk publicMetadata for ${clerkId}`);
+          this.logger.log(
+            `Synced role ${role} and status ${status} to Clerk publicMetadata for ${clerkId}`,
+          );
         } catch (syncErr) {
-          this.logger.warn(`Could not sync metadata to Clerk for user ${clerkId}: ${syncErr}`);
+          this.logger.warn(
+            `Could not sync metadata to Clerk for user ${clerkId}: ${syncErr}`,
+          );
         }
 
-        this.logger.log(`Created user ${primaryEmail} from Clerk webhook with role ${role}`);
+        this.logger.log(
+          `Created user ${primaryEmail} from Clerk webhook with role ${role}`,
+        );
         return { synced: true };
       }
 
@@ -169,7 +175,8 @@ export class AuthService {
         const data = evt.data as ClerkWebhookUserData;
         const clerkId = data.id;
         const primaryEmail = data.email_addresses?.[0]?.email_address;
-        const updatedRawRole = data.public_metadata?.role || data.unsafe_metadata?.role;
+        const updatedRawRole =
+          data.public_metadata?.role || data.unsafe_metadata?.role;
         let updatedRole: Role | undefined;
         if (typeof updatedRawRole === 'string') {
           const upper = updatedRawRole.toUpperCase();
