@@ -297,4 +297,157 @@ export class AuthService {
       updatedAt: updated.updatedAt,
     };
   }
+
+  /**
+   * Synchronously and idempotently provision a user during sign-up before token minting.
+   * Order of execution:
+   * 1. Check if user already exists in DB.
+   * 2. Query Clerk for the user. If not in Clerk, throw NotFoundException.
+   * 3. If user exists in DB, ensure ACTIVE status and sync Clerk publicMetadata.
+   * 4. If user does not exist in DB, create user in DB (with learnerProfile, streakRecord,
+   *    and instructorProfile if INSTRUCTOR) and update Clerk publicMetadata with role and status ACTIVE.
+   */
+  async provisionUser(clerkId: string) {
+    this.logger.log(`JIT provision requested for clerkId: ${clerkId}`);
+
+    // Step 1: Check if user exists in PostgreSQL
+    const existingDbUser = await this.prisma.user.findUnique({
+      where: { clerkId },
+    });
+
+    // Step 2: Query Clerk. If user does not exist in Clerk, throw an error.
+    let clerkUser;
+    try {
+      clerkUser = await this.clerk.users.getUser(clerkId);
+    } catch (err) {
+      this.logger.error(`Failed to fetch user from Clerk for ${clerkId}:`, err);
+      throw new NotFoundException({
+        code: 'CLERK_USER_NOT_FOUND',
+        message: `User ${clerkId} does not exist in Clerk`,
+      });
+    }
+
+    if (!clerkUser) {
+      throw new NotFoundException({
+        code: 'CLERK_USER_NOT_FOUND',
+        message: `User ${clerkId} does not exist in Clerk`,
+      });
+    }
+
+    // Step 3: If already in DB, verify status and sync Clerk publicMetadata if necessary
+    if (existingDbUser) {
+      this.logger.log(
+        `User with clerkId ${clerkId} already exists in DB with role ${existingDbUser.role}`,
+      );
+
+      // Ensure Clerk publicMetadata has role and status: ACTIVE
+      try {
+        await this.clerk.users.updateUserMetadata(clerkId, {
+          publicMetadata: {
+            role: existingDbUser.role,
+            status: UserStatus.ACTIVE,
+          },
+        });
+      } catch (syncErr) {
+        this.logger.warn(
+          `Could not update Clerk metadata for existing user ${clerkId}: ${syncErr}`,
+        );
+      }
+
+      return {
+        success: true,
+        message: 'User already provisioned',
+        role: existingDbUser.role,
+        status: existingDbUser.status,
+      };
+    }
+
+    // Step 4: User is not in DB yet. Extract details from Clerk (Clerk is source of truth)
+    const primaryEmail =
+      clerkUser.emailAddresses?.find(
+        (e) => e.id === clerkUser.primaryEmailAddressId,
+      )?.emailAddress || clerkUser.emailAddresses?.[0]?.emailAddress;
+
+    if (!primaryEmail) {
+      throw new BadRequestException({
+        code: 'EMAIL_REQUIRED',
+        message: 'User must have an email address in Clerk to be provisioned',
+      });
+    }
+
+    // Determine role from metadata (barring ADMIN)
+    const rawRole =
+      (clerkUser.publicMetadata as Record<string, unknown> | undefined)?.role ||
+      (clerkUser.unsafeMetadata as Record<string, unknown> | undefined)?.role;
+
+    let role: Role = Role.LEARNER;
+    if (typeof rawRole === 'string') {
+      const upper = rawRole.toUpperCase();
+      if (upper === 'INSTRUCTOR') {
+        role = Role.INSTRUCTOR;
+      }
+      // Any attempt to set ADMIN or invalid roles is ignored and defaults to LEARNER.
+    }
+
+    const status = UserStatus.ACTIVE;
+
+    // Create user in PostgreSQL
+    const newUser = await this.prisma.user.create({
+      data: {
+        clerkId,
+        email: primaryEmail,
+        firstName: clerkUser.firstName || '',
+        lastName: clerkUser.lastName || '',
+        avatarUrl: clerkUser.imageUrl || null,
+        role,
+        status,
+        learnerProfile: {
+          create: {
+            totalXp: 0,
+            currentLevel: 1,
+            streakDays: 0,
+          },
+        },
+        streakRecord: {
+          create: {
+            currentStreak: 0,
+            longestStreak: 0,
+          },
+        },
+        ...(role === Role.INSTRUCTOR
+          ? {
+              instructorProfile: {
+                create: {
+                  status: 'PENDING',
+                },
+              },
+            }
+          : {}),
+      },
+    });
+
+    // Write role and status to Clerk publicMetadata so the JWT token minted on finalize() will include them
+    try {
+      await this.clerk.users.updateUserMetadata(clerkId, {
+        publicMetadata: {
+          role,
+          status,
+        },
+      });
+      this.logger.log(
+        `Synced role ${role} and status ${status} to Clerk publicMetadata for ${clerkId}`,
+      );
+    } catch (syncErr) {
+      this.logger.error(
+        `Failed to sync metadata to Clerk for ${clerkId}: ${syncErr}`,
+      );
+    }
+
+    return {
+      success: true,
+      message: 'User provisioned successfully',
+      role: newUser.role,
+      status: newUser.status,
+    };
+  }
 }
