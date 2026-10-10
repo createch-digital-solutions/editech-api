@@ -16,6 +16,7 @@ import { CertificatesModule } from './modules/certificates/certificates.module.j
 import { PaymentsModule } from './modules/payments/payments.module.js';
 import { CommunityModule } from './modules/community/community.module.js';
 import { AdminModule } from './modules/admin/admin.module.js';
+import { OnboardingModule } from './modules/onboarding/onboarding.module.js';
 import { AppController } from './app.controller.js';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware.js';
 import { ClerkAuthGuard } from './common/guards/clerk-auth.guard.js';
@@ -47,6 +48,7 @@ import { RolesGuard } from './common/guards/roles.guard.js';
     PaymentsModule,
     CommunityModule,
     AdminModule,
+    OnboardingModule,
   ],
   providers: [
     {
