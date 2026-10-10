@@ -14,6 +14,7 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main.js",
     "lint": "eslint \"{src,test}/**/*.ts\" --fix",
+    "typecheck": "tsc --noEmit",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./jest.config.json",
     "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./jest.config.json --watch",
     "test:cov": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./jest.config.json --coverage",
