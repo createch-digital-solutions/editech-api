@@ -2,9 +2,9 @@ name: API CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
   pull_request:
-    branches: [main]
+    branches: [main, dev]
 
 jobs:
   build-and-test:
@@ -35,6 +35,9 @@ jobs:
 
       - name: Generate Prisma Client
         run: pnpm prisma:generate
+
+      - name: Typecheck
+        run: pnpm typecheck
 
       - name: Lint
         run: pnpm lint

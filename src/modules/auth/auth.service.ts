@@ -4,10 +4,13 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
-import { Role, UserStatus } from '@prisma/client';
+import { Role, UserStatus, InstructorStatus } from '@prisma/client';
 import { createClerkClient } from '@clerk/backend';
 import { Webhook } from 'svix';
 import { PrismaService } from '../prisma/prisma.service.js';
+
+export type ProfileStatus =
+  'PENDING_ONBOARDING' | 'PENDING_APPROVAL' | 'ACTIVE' | 'SUSPENDED';
 
 interface ClerkEmailAddress {
   email_address: string;
@@ -232,6 +235,10 @@ export class AuthService {
   async getMe(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
+      include: {
+        learnerProfile: true,
+        instructorProfile: true,
+      },
     });
 
     if (!user) {
@@ -241,14 +248,45 @@ export class AuthService {
       });
     }
 
+    let profileStatus: ProfileStatus;
+
+    if (user.status === UserStatus.SUSPENDED) {
+      profileStatus = 'SUSPENDED';
+    } else if (user.role === Role.ADMIN) {
+      profileStatus = 'ACTIVE';
+    } else if (user.role === Role.INSTRUCTOR) {
+      const inst = user.instructorProfile;
+      if (!inst || !inst.bio) {
+        profileStatus = 'PENDING_ONBOARDING';
+      } else if (inst.status === InstructorStatus.APPROVED) {
+        profileStatus = 'ACTIVE';
+      } else if (inst.status === InstructorStatus.SUSPENDED) {
+        profileStatus = 'SUSPENDED';
+      } else {
+        profileStatus = 'PENDING_APPROVAL';
+      }
+    } else {
+      // Default / LEARNER
+      const learner = user.learnerProfile;
+      if (!learner || !learner.careerGoal) {
+        profileStatus = 'PENDING_ONBOARDING';
+      } else {
+        profileStatus = 'ACTIVE';
+      }
+    }
+
     return {
       id: user.id,
+      clerkId: user.clerkId,
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
       role: user.role,
       status: user.status,
+      profileStatus,
       avatarUrl: user.avatarUrl,
+      learnerProfile: user.learnerProfile,
+      instructorProfile: user.instructorProfile,
       createdAt: user.createdAt,
     };
   }
