@@ -10,11 +10,7 @@ import { Webhook } from 'svix';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 export type ProfileStatus =
-  | 'PENDING_ONBOARDING'
-  | 'PENDING_APPROVAL'
-  | 'ACTIVE'
-  | 'SUSPENDED';
-
+  'PENDING_ONBOARDING' | 'PENDING_APPROVAL' | 'ACTIVE' | 'SUSPENDED';
 
 interface ClerkEmailAddress {
   email_address: string;

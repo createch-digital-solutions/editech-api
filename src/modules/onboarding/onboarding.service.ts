@@ -1,18 +1,11 @@
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Role, UserStatus, InstructorStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { LearnerOnboardingDto } from './dto/learner-onboarding.dto.js';
 import { InstructorOnboardingDto } from './dto/instructor-onboarding.dto.js';
 
 export type ProfileStatus =
-  | 'PENDING_ONBOARDING'
-  | 'PENDING_APPROVAL'
-  | 'ACTIVE'
-  | 'SUSPENDED';
+  'PENDING_ONBOARDING' | 'PENDING_APPROVAL' | 'ACTIVE' | 'SUSPENDED';
 
 @Injectable()
 export class OnboardingService {
@@ -53,7 +46,9 @@ export class OnboardingService {
       },
     });
 
-    this.logger.log(`Learner profile successfully onboarded for user ${userId}`);
+    this.logger.log(
+      `Learner profile successfully onboarded for user ${userId}`,
+    );
 
     return {
       onboardingComplete: true,
@@ -90,7 +85,9 @@ export class OnboardingService {
       },
     });
 
-    this.logger.log(`Instructor onboarding application submitted for user ${userId}`);
+    this.logger.log(
+      `Instructor onboarding application submitted for user ${userId}`,
+    );
 
     return {
       instructorStatus: InstructorStatus.PENDING,

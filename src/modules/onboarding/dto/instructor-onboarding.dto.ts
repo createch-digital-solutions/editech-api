@@ -9,7 +9,10 @@ import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class InstructorPayoutDto {
-  @ApiProperty({ description: 'Bank code (e.g., 058 for GTBank)', example: '058' })
+  @ApiProperty({
+    description: 'Bank code (e.g., 058 for GTBank)',
+    example: '058',
+  })
   @IsString()
   @IsNotEmpty()
   bankCode: string;
@@ -19,7 +22,10 @@ export class InstructorPayoutDto {
   @IsNotEmpty()
   accountNumber: string;
 
-  @ApiProperty({ description: 'Account name registered with bank', example: 'Jane Doe' })
+  @ApiProperty({
+    description: 'Account name registered with bank',
+    example: 'Jane Doe',
+  })
   @IsString()
   @IsNotEmpty()
   accountName: string;
@@ -28,7 +34,8 @@ export class InstructorPayoutDto {
 export class InstructorOnboardingDto {
   @ApiProperty({
     description: 'Instructor professional biography and credentials',
-    example: 'Senior Cloud Engineer with 10+ years designing enterprise architectures.',
+    example:
+      'Senior Cloud Engineer with 10+ years designing enterprise architectures.',
   })
   @IsString()
   @IsNotEmpty()
@@ -46,7 +53,8 @@ export class InstructorOnboardingDto {
 
   @ApiPropertyOptional({
     type: InstructorPayoutDto,
-    description: 'Optional Nigerian bank details for Paystack subaccount/recipient setup',
+    description:
+      'Optional Nigerian bank details for Paystack subaccount/recipient setup',
   })
   @IsOptional()
   @ValidateNested()

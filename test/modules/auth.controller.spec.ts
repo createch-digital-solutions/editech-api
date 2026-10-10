@@ -32,19 +32,27 @@ describe('AuthController', () => {
             getHealth: jest
               .fn()
               .mockReturnValue({ status: 'ok', module: 'auth' }),
-            getMe: jest.fn().mockResolvedValue(mockUser),
-            updateUserRole: jest.fn().mockResolvedValue({
-              id: 'user-uuid-1',
-              email: 'adaeze@createch.example.com',
-              role: Role.INSTRUCTOR,
-            }),
-            handleClerkWebhook: jest.fn().mockResolvedValue({ synced: true }),
-            provisionUser: jest.fn().mockResolvedValue({
-              success: true,
-              message: 'User provisioned successfully',
-              role: Role.LEARNER,
-              status: UserStatus.ACTIVE,
-            }),
+            getMe: jest
+              .fn<(...args: unknown[]) => Promise<unknown>>()
+              .mockResolvedValue(mockUser),
+            updateUserRole: jest
+              .fn<(...args: unknown[]) => Promise<unknown>>()
+              .mockResolvedValue({
+                id: 'user-uuid-1',
+                email: 'adaeze@createch.example.com',
+                role: Role.INSTRUCTOR,
+              }),
+            handleClerkWebhook: jest
+              .fn<(...args: unknown[]) => Promise<unknown>>()
+              .mockResolvedValue({ synced: true }),
+            provisionUser: jest
+              .fn<(...args: unknown[]) => Promise<unknown>>()
+              .mockResolvedValue({
+                success: true,
+                message: 'User provisioned successfully',
+                role: Role.LEARNER,
+                status: UserStatus.ACTIVE,
+              }),
           },
         },
         {
