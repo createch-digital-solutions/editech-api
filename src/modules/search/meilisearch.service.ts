@@ -20,7 +20,10 @@ export class MeilisearchService {
 
   constructor() {
     const host = process.env.MEILISEARCH_HOST;
-    const apiKey = process.env.MEILI_MASTER_KEY;
+    const apiKey =
+      process.env.MEILI_MASTER_KEY ||
+      process.env.MEILISEARCH_KEY ||
+      process.env.MEILISEARCH_API_KEY;
 
     if (host && apiKey && !apiKey.includes('placeholder')) {
       try {

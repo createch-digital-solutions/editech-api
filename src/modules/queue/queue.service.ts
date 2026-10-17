@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { QUEUE_NAMES, JOB_NAMES } from './queue.constants.js';
-import type { EmailJobPayload } from './processors/email.processor.js';
+import type { EmailJobPayload } from '../../jobs/email.processor.js';
 
 @Injectable()
 export class QueueService {

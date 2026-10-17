@@ -3,7 +3,6 @@ import { BullModule } from '@nestjs/bullmq';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { QUEUE_NAMES } from './queue.constants.js';
 import { QueueService } from './queue.service.js';
-import { EmailProcessor } from './processors/email.processor.js';
 
 @Global()
 @Module({
@@ -52,7 +51,7 @@ import { EmailProcessor } from './processors/email.processor.js';
       },
     ),
   ],
-  providers: [QueueService, EmailProcessor],
+  providers: [QueueService],
   exports: [BullModule, QueueService],
 })
 export class QueueModule {}

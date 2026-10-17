@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import type { Job } from 'bullmq';
-import { QUEUE_NAMES, JOB_NAMES } from '../../queue/queue.constants.js';
-import { PrismaService } from '../../prisma/prisma.service.js';
+import { QUEUE_NAMES, JOB_NAMES } from '../modules/queue/queue.constants.js';
+import { PrismaService } from '../modules/prisma/prisma.service.js';
 
 export interface PaymentWebhookJobPayload {
   provider: 'paystack' | 'stripe';
@@ -13,8 +13,8 @@ export interface PaymentWebhookJobPayload {
 
 @Injectable()
 @Processor(QUEUE_NAMES.PAYMENTS)
-export class PaymentsProcessor extends WorkerHost {
-  private readonly logger = new Logger(PaymentsProcessor.name);
+export class PayoutProcessor extends WorkerHost {
+  private readonly logger = new Logger(PayoutProcessor.name);
 
   constructor(private readonly prisma: PrismaService) {
     super();

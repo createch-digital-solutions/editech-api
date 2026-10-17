@@ -4,7 +4,7 @@ import { Queue } from 'bullmq';
 import { QUEUE_NAMES, JOB_NAMES } from '../queue/queue.constants.js';
 import { paystackClient } from '../../common/clients/paystack.client.js';
 import { stripeClient } from '../../common/clients/stripe.client.js';
-import type { PaymentWebhookJobPayload } from './processors/payments.processor.js';
+import type { PaymentWebhookJobPayload } from '../../jobs/payout.processor.js';
 
 @Injectable()
 export class PaymentsService {
