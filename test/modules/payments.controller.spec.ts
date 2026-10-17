@@ -8,7 +8,21 @@ describe('PaymentsController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PaymentsController],
-      providers: [PaymentsService],
+      providers: [
+        {
+          provide: PaymentsService,
+          useValue: {
+            getHealth: () => ({ status: 'ok', module: 'payments' }),
+            initiatePayment: () =>
+              Promise.resolve({
+                provider: 'paystack',
+                checkoutUrl: 'https://paystack.com',
+              }),
+            queueWebhook: () =>
+              Promise.resolve({ received: true, queued: true }),
+          },
+        },
+      ],
     }).compile();
 
     controller = module.get<PaymentsController>(PaymentsController);
