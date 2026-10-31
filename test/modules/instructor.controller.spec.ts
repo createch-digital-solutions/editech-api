@@ -3,6 +3,8 @@ import { InstructorController } from '../../src/modules/instructor/instructor.co
 import { InstructorService } from '../../src/modules/instructor/instructor.service.js';
 import { PrismaService } from '../../src/modules/prisma/prisma.service.js';
 
+import { S3Service } from '../../src/modules/s3/s3.service.js';
+
 describe('InstructorController', () => {
   let controller: InstructorController;
 
@@ -14,6 +16,14 @@ describe('InstructorController', () => {
         {
           provide: PrismaService,
           useValue: {},
+        },
+        {
+          provide: S3Service,
+          useValue: {
+            getUploadPresignedUrl: () =>
+              Promise.resolve({ uploadUrl: 'https://r2.example.com' }),
+            fileExists: () => Promise.resolve(true),
+          },
         },
       ],
     }).compile();

@@ -17,6 +17,9 @@ import { PaymentsModule } from './modules/payments/payments.module.js';
 import { CommunityModule } from './modules/community/community.module.js';
 import { AdminModule } from './modules/admin/admin.module.js';
 import { OnboardingModule } from './modules/onboarding/onboarding.module.js';
+import { QueueModule } from './modules/queue/queue.module.js';
+import { SearchModule } from './modules/search/search.module.js';
+import { JobsModule } from './jobs/jobs.module.js';
 import { AppController } from './app.controller.js';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware.js';
 import { ClerkAuthGuard } from './common/guards/clerk-auth.guard.js';
@@ -34,6 +37,9 @@ import { RolesGuard } from './common/guards/roles.guard.js';
         limit: 100,
       },
     ]),
+    QueueModule,
+    JobsModule,
+    SearchModule,
     PrismaModule,
     HealthModule,
     AuthModule,

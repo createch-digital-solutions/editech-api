@@ -21,12 +21,16 @@ import { CreateCourseDto } from './dto/create-course.dto.js';
 import { UpdateCourseDto } from './dto/update-course.dto.js';
 import { CreateSectionDto } from './dto/create-section.dto.js';
 import { CreateLessonDto } from './dto/create-lesson.dto.js';
+import { MeilisearchService } from '../search/meilisearch.service.js';
 
 @Injectable()
 export class CoursesService {
   private readonly logger = new Logger(CoursesService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly meilisearch: MeilisearchService,
+  ) {}
 
   getHealth() {
     return { status: 'ok', module: 'courses' };
@@ -173,6 +177,69 @@ export class CoursesService {
     const skip = (page - 1) * limit;
     const term = query.q.trim();
 
+    // 1. Attempt Meilisearch fast search (Phase 14 Table 4)
+    try {
+      const meiliResult = await this.meilisearch.searchCourses(term, {
+        limit,
+        offset: skip,
+      });
+
+      if (meiliResult.hits && meiliResult.hits.length > 0) {
+        const courseIds = (meiliResult.hits as Array<{ id: string }>).map(
+          (h) => h.id,
+        );
+        const courses = await this.prisma.course.findMany({
+          where: {
+            id: { in: courseIds },
+            status: CourseStatus.PUBLISHED,
+            deletedAt: null,
+          },
+          include: {
+            instructor: {
+              include: {
+                user: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                    avatarUrl: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        // Retain ranking order from Meilisearch
+        const courseMap = new Map(courses.map((c) => [c.id, c]));
+        const orderedCourses = courseIds
+          .map((id: string) => courseMap.get(id))
+          .filter((c): c is (typeof courses)[0] => Boolean(c));
+
+        return {
+          data: {
+            hits: orderedCourses.map((c) => this.formatCourseListItem(c)),
+            query: term,
+            processingTimeMs: Date.now() - start,
+          },
+          pagination: {
+            page,
+            limit,
+            total: meiliResult.estimatedTotalHits || orderedCourses.length,
+            totalPages:
+              Math.ceil(
+                (meiliResult.estimatedTotalHits || orderedCourses.length) /
+                  limit,
+              ) || 1,
+          },
+        };
+      }
+    } catch (err) {
+      this.logger.warn(
+        `Meilisearch query failed, falling back to PostgreSQL: ${err}`,
+      );
+    }
+
+    // 2. Fallback to PostgreSQL database search
     const where: Prisma.CourseWhereInput = {
       status: CourseStatus.PUBLISHED,
       deletedAt: null,
