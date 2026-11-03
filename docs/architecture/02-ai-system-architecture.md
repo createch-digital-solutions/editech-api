@@ -98,7 +98,25 @@ graph TD
 
 ---
 
-## 4. Configuration Requirements
+## 4. Prompt Engineering & Utility Architecture (`src/modules/ai/prompts/`)
+
+To prevent hardcoded prompts and ensure prompt versioning, testing, and easy tuning, all prompts are decoupled from service logic into dedicated utility files:
+
+```text
+src/modules/ai/prompts/
+├── course-builder.prompts.ts   # System prompt & parameter builder for curriculum scaffolding
+├── tutor.prompts.ts            # System prompt, persona styles (Friendly, Formal, Socratic), and paywall guardrails
+└── index.ts                    # Central barrel export
+```
+
+### Benefits of the Prompt Utility Standard:
+1. **Separation of Concerns**: Changes to prompts, tone, or pedagogical rules do not require touching API or service code.
+2. **Standardized Guardrails**: Paywall enforcement and anti-leakage rules are centrally maintained in `tutor.prompts.ts`.
+3. **Testability**: Prompt builders are pure functions and can be unit-tested with various input permutations.
+
+---
+
+## 5. Configuration Requirements
 
 ### Environment Variables (`editech-api/.env`)
 ```bash

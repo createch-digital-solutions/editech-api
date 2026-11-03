@@ -4,8 +4,10 @@ import { PayoutProcessor } from './payout.processor.js';
 import { VideoTranscodeProcessor } from './video-transcode.processor.js';
 import { AiCourseBuilderProcessor } from './ai-course-builder.processor.js';
 import { CertificateProcessor } from './certificate.processor.js';
+import { AiModule } from '../modules/ai/ai.module.js';
 
 @Module({
+  imports: [AiModule],
   providers: [
     EmailProcessor,
     PayoutProcessor,
