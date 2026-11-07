@@ -31,11 +31,15 @@ export class AiService {
   ) {}
 
   getHealth() {
+    const configured = this.aiProvider.hasValidKey();
+    const model = this.aiProvider.getModelName();
+    this.logger.log(`[AI Health] Status: ok, model: ${model}, keyConfigured: ${configured}`);
     return {
       status: 'ok',
       module: 'ai',
       provider: 'google-gemini',
-      configured: this.aiProvider.hasValidKey(),
+      model,
+      configured,
     };
   }
 
@@ -44,10 +48,15 @@ export class AiService {
    */
   async generateCourseScaffold(dto: GenerateCourseDto): Promise<CourseScaffold> {
     const model = this.aiProvider.getModel();
+    const modelName = this.aiProvider.getModelName();
+
+    this.logger.log(
+      `[AI Course Scaffold Request] prompt="${dto.prompt.slice(0, 80)}...", level=${dto.level || 'INTERMEDIATE'}, outcome=${dto.outcomeTag || 'GET_A_JOB'}, category=${dto.category || 'default'}`,
+    );
 
     if (!model) {
       this.logger.warn(
-        'AI Provider not configured. Returning deterministic scaffold stub for development.',
+        `AI Provider not configured with valid API key. Returning deterministic scaffold stub for development.`,
       );
       return this.generateStubScaffold(dto);
     }
@@ -61,6 +70,7 @@ export class AiService {
     });
 
     try {
+      this.logger.log(`[AI Course Scaffold] Calling Gemini (${modelName}) with structured Zod schema...`);
       const { object } = await generateObject({
         model,
         schema: CourseScaffoldSchema,
@@ -68,12 +78,15 @@ export class AiService {
         prompt: userPrompt,
       });
 
+      this.logger.log(
+        `[AI Course Scaffold Complete] Generated course "${object.title}" with ${object.sections.length} sections and ${object.tags.length} tags.`,
+      );
       return object;
     } catch (err: unknown) {
       const errorMessage =
         err instanceof Error ? err.message : 'Unknown generation error';
       this.logger.error(
-        `Failed to generate course scaffold from AI: ${errorMessage}`,
+        `[AI Course Scaffold Error] Failed to generate course scaffold from model (${modelName}): ${errorMessage}`,
         err instanceof Error ? err.stack : undefined,
       );
       this.logger.warn('Falling back to deterministic scaffold stub.');
@@ -91,6 +104,12 @@ export class AiService {
     res: Response,
   ): Promise<void> {
     const model = this.aiProvider.getModel();
+    const modelName = this.aiProvider.getModelName();
+    const latestMsg = dto.messages[dto.messages.length - 1];
+
+    this.logger.log(
+      `[Aria Chat Request] learnerId=${learnerId}, persona=${dto.persona}, msgCount=${dto.messages.length}, courseId=${dto.courseId || 'none'}, lessonId=${dto.lessonId || 'none'}, latestQuery="${latestMsg?.content?.slice(0, 70) || ''}..."`,
+    );
 
     // 1. Dual-Scope Security Guardrail: Check Enrollment if scoped to a course or lesson
     let courseTitle: string | undefined;
@@ -112,6 +131,9 @@ export class AiService {
       });
 
       if (!enrolment || enrolment.status !== 'ACTIVE') {
+        this.logger.warn(
+          `[Aria Security] Access denied: learnerId=${learnerId} is not actively enrolled in courseId=${dto.courseId}`,
+        );
         throw new ForbiddenException(
           'You must be actively enrolled in this course to access the in-classroom AI tutor.',
         );
@@ -146,10 +168,13 @@ export class AiService {
 
     // 3. Fallback if model is not configured (stub streaming)
     if (!model) {
+      this.logger.warn(
+        `[Aria Stream Fallback] AI model not configured for streaming. Returning stub message.`,
+      );
       res.setHeader('Content-Type', 'text/plain; charset=utf-8');
       res.setHeader('Transfer-Encoding', 'chunked');
       const fallbackReply =
-        `Hello! I'm Aria, your learning coach. (AI Provider is currently in demo/stub mode: set GEMINI_API_KEY to activate live AI). ` +
+        `Hello! I'm Aria, your learning coach. (AI Provider is currently in demo/stub mode: set GEMINI_API_KEY on Render to activate live AI). ` +
         `Regarding your question, keep practicing and review the course material!`;
       res.write(fallbackReply);
       res.end();
@@ -158,6 +183,7 @@ export class AiService {
 
     // 4. Stream response using Vercel AI SDK with robust error capturing
     try {
+      this.logger.log(`[Aria Stream Start] Initiating stream with ${modelName}...`);
       const result = streamText({
         model,
         system: systemPrompt,
@@ -171,11 +197,17 @@ export class AiService {
       res.setHeader('Transfer-Encoding', 'chunked');
 
       let fullReply = '';
+      let chunkCount = 0;
       for await (const chunk of result.textStream) {
+        chunkCount++;
         fullReply += chunk;
         res.write(chunk);
       }
       res.end();
+
+      this.logger.log(
+        `[Aria Stream Complete] Delivered ${chunkCount} chunks (~${fullReply.length} chars) to learnerId=${learnerId}`,
+      );
 
       // 5. Asynchronously persist conversation history
       if (fullReply.trim()) {
@@ -193,7 +225,7 @@ export class AiService {
       const errorMessage =
         err instanceof Error ? err.message : 'Unknown AI streaming error';
       this.logger.error(
-        `AI Tutor stream failed: ${errorMessage}`,
+        `[Aria Stream Error] Failed during streamText execution with model (${modelName}): ${errorMessage}`,
         err instanceof Error ? err.stack : undefined,
       );
 
@@ -211,6 +243,7 @@ export class AiService {
    * Retrieves chat history for a learner
    */
   async getConversations(learnerId: string, lessonId?: string) {
+    this.logger.log(`[Aria History] Fetching conversations for learnerId=${learnerId}, lessonId=${lessonId || 'all'}`);
     return this.prisma.aiConversation.findMany({
       where: {
         learnerId,

@@ -16,6 +16,7 @@ describe('AiController', () => {
 
   const mockAiProvider = {
     getModel: jest.fn().mockReturnValue(null),
+    getModelName: jest.fn().mockReturnValue('gemini-2.5-flash'),
     hasValidKey: jest.fn().mockReturnValue(false),
   };
 
@@ -41,6 +42,7 @@ describe('AiController', () => {
       status: 'ok',
       module: 'ai',
       provider: 'google-gemini',
+      model: 'gemini-2.5-flash',
       configured: false,
     });
   });
