@@ -27,7 +27,7 @@ export class AiProvider {
 
     try {
       const google = createGoogleGenerativeAI({ apiKey });
-      const modelName = process.env.AI_MODEL_NAME || 'gemini-1.5-flash';
+      const modelName = process.env.AI_MODEL_NAME || 'gemini-2.5-flash';
       this.model = google(modelName);
       this.isConfigured = true;
       this.logger.log(`AI Provider initialized successfully with model: ${modelName}`);

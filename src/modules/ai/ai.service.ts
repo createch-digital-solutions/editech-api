@@ -60,14 +60,25 @@ export class AiService {
       category: dto.category,
     });
 
-    const { object } = await generateObject({
-      model,
-      schema: CourseScaffoldSchema,
-      system: systemPrompt,
-      prompt: userPrompt,
-    });
+    try {
+      const { object } = await generateObject({
+        model,
+        schema: CourseScaffoldSchema,
+        system: systemPrompt,
+        prompt: userPrompt,
+      });
 
-    return object;
+      return object;
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Unknown generation error';
+      this.logger.error(
+        `Failed to generate course scaffold from AI: ${errorMessage}`,
+        err instanceof Error ? err.stack : undefined,
+      );
+      this.logger.warn('Falling back to deterministic scaffold stub.');
+      return this.generateStubScaffold(dto);
+    }
   }
 
   /**
@@ -145,36 +156,55 @@ export class AiService {
       return;
     }
 
-    // 4. Stream response using Vercel AI SDK
-    const result = streamText({
-      model,
-      system: systemPrompt,
-      messages: dto.messages.map((m) => ({
-        role: m.role,
-        content: m.content,
-      })),
-    });
+    // 4. Stream response using Vercel AI SDK with robust error capturing
+    try {
+      const result = streamText({
+        model,
+        system: systemPrompt,
+        messages: dto.messages.map((m) => ({
+          role: m.role,
+          content: m.content,
+        })),
+      });
 
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.setHeader('Transfer-Encoding', 'chunked');
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      res.setHeader('Transfer-Encoding', 'chunked');
 
-    let fullReply = '';
-    for await (const chunk of result.textStream) {
-      fullReply += chunk;
-      res.write(chunk);
+      let fullReply = '';
+      for await (const chunk of result.textStream) {
+        fullReply += chunk;
+        res.write(chunk);
+      }
+      res.end();
+
+      // 5. Asynchronously persist conversation history
+      if (fullReply.trim()) {
+        this.persistConversation(
+          learnerId,
+          dto.courseId,
+          dto.lessonId,
+          dto.messages,
+          fullReply,
+        ).catch((err) => {
+          this.logger.error('Failed to persist AI conversation', err);
+        });
+      }
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Unknown AI streaming error';
+      this.logger.error(
+        `AI Tutor stream failed: ${errorMessage}`,
+        err instanceof Error ? err.stack : undefined,
+      );
+
+      if (!res.headersSent) {
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      }
+      res.write(
+        `I encountered a temporary problem contacting the AI service (${errorMessage}). Please try again in a moment.`,
+      );
+      res.end();
     }
-    res.end();
-
-    // 5. Asynchronously persist conversation history
-    this.persistConversation(
-      learnerId,
-      dto.courseId,
-      dto.lessonId,
-      dto.messages,
-      fullReply,
-    ).catch((err) => {
-      this.logger.error('Failed to persist AI conversation', err);
-    });
   }
 
   /**
