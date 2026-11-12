@@ -35,17 +35,18 @@ export interface SeedCourse {
   sections: SeedSection[];
 }
 
-// User-provided UI/UX Google Drive video streams
-const driveVideos = {
-  v1: 'https://drive.google.com/file/d/15wx-mLjhW8G2VjJNR2tG-x0ZCI2ENNM_/preview',
-  v2: 'https://drive.google.com/file/d/1NGps4qF6MDWsFjleI0ue3LGf-PeIpohe/preview',
-  v3: 'https://drive.google.com/file/d/1vByExxcWZEoEk4dPirbAzn4jUEvf-oGo/preview',
-  v4: 'https://drive.google.com/file/d/1A_thSPJuOCYmiAg69SbdaZXvcCMT5Ajq/preview',
-  v5: 'https://drive.google.com/file/d/1XCs7zVguQHwJVvPu_xkJxePMrppp5sWV/preview',
-  v6: 'https://drive.google.com/file/d/1GRwajJreKt-AmcRyHXw5kNrIc1s6NaFS/preview',
-  v7: 'https://drive.google.com/file/d/1GIHmWvR0Iq5nnU8wPzPTq4KHOF00cnmh/preview',
-  v8: 'https://drive.google.com/file/d/1jH1IA_OgLrDiioNiURGS-b8NYZ48Zjqh/preview',
-  v9: 'https://drive.google.com/file/d/1qJhk0rTHpbyk5g6CF9zGD6yPX86mT07h/preview',
+// User-provided UI/UX Cloudflare R2 video streams (Direct MP4s)
+const uiuxVideos = {
+  intro: 'https://pub-efff7453d87d4dc7b28061ed268a83d1.r2.dev/introduction%20to%20figma%20alternate.mp4',
+  m1: 'https://pub-efff7453d87d4dc7b28061ed268a83d1.r2.dev/HANTEK%20UI-UX%20DESIGN%20COURSE%20MODULE%201.mp4',
+  m2: 'https://pub-efff7453d87d4dc7b28061ed268a83d1.r2.dev/HANTEK%20UI-UX%20DESIGN%20COURSE%20MODULE%202.mp4',
+  m3: 'https://pub-efff7453d87d4dc7b28061ed268a83d1.r2.dev/HANTEK%20UI-UX%20DESIGN%20COURSE%20MODULE%203.mp4',
+  m4: 'https://pub-efff7453d87d4dc7b28061ed268a83d1.r2.dev/HANTEK%20UI-UX%20DESIGN%20COURSE%20MODULE%204.mp4',
+  m5: 'https://pub-efff7453d87d4dc7b28061ed268a83d1.r2.dev/HANTEK%20UI-UX%20DESIGN%20COURSE%20MODULE%205.mp4',
+  m6: 'https://pub-efff7453d87d4dc7b28061ed268a83d1.r2.dev/HANTEK%20UI-UX%20DESIGN%20COURSE%20MODULE%206.mp4',
+  m7: 'https://pub-efff7453d87d4dc7b28061ed268a83d1.r2.dev/HANTEK%20UI-UX%20DESIGN%20COURSE%20MODULE%207.mp4',
+  m8: 'https://pub-efff7453d87d4dc7b28061ed268a83d1.r2.dev/HANTEK%20UI-UX%20DESIGN%20COURSE%20MODULE%208.mp4',
+  whatNext: 'https://pub-efff7453d87d4dc7b28061ed268a83d1.r2.dev/hantek%20ui%20what%20next.mp4',
 };
 
 // Global direct MP4 streams for full HTML5 playback
@@ -83,101 +84,116 @@ export const coursesData: SeedCourse[] = [
     isFeatured: true,
     sections: [
       {
-        title: 'Module 1: Atomic Foundations & Visual Design Tokens',
+        title: 'Module 1: Atomic Foundations & Figma Setup',
         position: 1,
         lessons: [
           {
-            title: '1.1 Design System Principles & Semantic Color Tokens',
+            title: '1.1 Introduction to Figma & Workspace Fundamentals',
             position: 1,
-            videoUrl: driveVideos.v1,
+            videoUrl: uiuxVideos.intro,
             videoDuration: 640,
             isPreview: true,
             content:
-              'The core philosophy of design tokens: organizing colors, typography scales, spacing units, and elevations into reusable design foundations in Figma.',
+              'Introduction to Figma: setting up your design canvas, navigating frames, tools, shortcuts, and core workspace ergonomics.',
           },
           {
-            title: '1.2 Advanced Auto-Layout & Responsive Constraints',
+            title: '1.2 Design System Principles & Semantic Color Tokens',
             position: 2,
-            videoUrl: driveVideos.v2,
+            videoUrl: uiuxVideos.m1,
             videoDuration: 820,
             isPreview: true,
             content:
-              'Build resilient layouts that scale effortlessly across mobile, tablet, and widescreen desktop viewports using Figma Auto-Layout 5.',
+              'The core philosophy of design tokens: organizing colors, typography scales, spacing units, and elevations into reusable foundations.',
           },
           {
-            title: '1.3 Typography Hierarchies & Fluid Type Scales',
+            title: '1.3 User Research & Wireframing Fundamentals',
             position: 3,
-            videoUrl: driveVideos.v3,
+            videoUrl: uiuxVideos.m2,
             videoDuration: 750,
-            isPreview: true,
+            isPreview: false,
             content:
-              'Architecting mathematical font scales (Major Third, Perfect Fourth) with responsive line-height and letter-spacing pairings.',
+              'Translating user problem statements into low-fidelity wireframes, information architecture diagrams, and task flow maps.',
           },
         ],
       },
       {
-        title: 'Module 2: Interactive Components & Component Sets',
+        title: 'Module 2: Visual Hierarchy, Auto-Layout & Component Sets',
         position: 2,
         lessons: [
           {
-            title: '2.1 Component Variants, Boolean Props & Slot Patterns',
+            title: '2.1 Typography Hierarchies & Fluid Type Scales',
             position: 1,
-            videoUrl: driveVideos.v4,
+            videoUrl: uiuxVideos.m3,
             videoDuration: 890,
+            isPreview: false,
+            content:
+              'Architecting mathematical font scales with responsive line-height and letter-spacing pairings for accessibility.',
+          },
+          {
+            title: '2.2 Advanced Auto-Layout & Responsive Constraints',
+            position: 2,
+            videoUrl: uiuxVideos.m4,
+            videoDuration: 910,
+            isPreview: false,
+            content:
+              'Build resilient layouts that scale effortlessly across mobile, tablet, and widescreen desktop viewports using Figma Auto-Layout.',
+          },
+          {
+            title: '2.3 Component Variants, Boolean Props & Slot Patterns',
+            position: 3,
+            videoUrl: uiuxVideos.m5,
+            videoDuration: 860,
             isPreview: false,
             content:
               'Constructing robust button and input component sets with hover, active, focused, disabled, and loading states.',
           },
+        ],
+      },
+      {
+        title: 'Module 3: Prototyping, Usability Testing & Developer Handoff',
+        position: 3,
+        lessons: [
           {
-            title: '2.2 Complex Form Controls & Interactive Prototyping',
-            position: 2,
-            videoUrl: driveVideos.v5,
-            videoDuration: 910,
+            title: '3.1 Interactive Prototyping & Micro-interactions',
+            position: 1,
+            videoUrl: uiuxVideos.m6,
+            videoDuration: 930,
             isPreview: false,
             content:
-              'Building accessible dropdowns, switches, checkbox grids, and multi-step stepper components with micro-interactions.',
+              'Building interactive prototypes, micro-interactions, spring animations, and multi-state flows with Smart Animate in Figma.',
           },
           {
-            title: '2.3 Dark Mode Theming & Multi-Brand Token Systems',
-            position: 3,
-            videoUrl: driveVideos.v6,
-            videoDuration: 860,
+            title: '3.2 Usability Testing, Heuristics & Design Audits',
+            position: 2,
+            videoUrl: uiuxVideos.m7,
+            videoDuration: 800,
             isPreview: false,
             content:
-              'Implementing multi-theme modes in Figma with variable collections, aliasing semantic tokens across light and dark palettes.',
+              'Conducting remote usability sessions, cognitive walkthroughs, Nielsen Norman heuristics audits, and qualitative testing.',
+          },
+          {
+            title: '3.3 Developer Handoff & Design Tokens in Code',
+            position: 3,
+            videoUrl: uiuxVideos.m8,
+            videoDuration: 1250,
+            isPreview: false,
+            content:
+              'Bridge the gap between design and engineering: exporting design tokens to CSS variables, Tailwind configurations, and Storybook documentation.',
           },
         ],
       },
       {
-        title: 'Module 3: Designer-Developer Handoff & Code Integration',
-        position: 3,
+        title: 'Module 4: Career Launch & Next Steps',
+        position: 4,
         lessons: [
           {
-            title: '3.1 Exporting Tokens to Tailwind CSS & CSS Variables',
+            title: '4.1 What Next: Portfolio Architecture, Freelancing & Career Paths',
             position: 1,
-            videoUrl: driveVideos.v7,
-            videoDuration: 930,
+            videoUrl: uiuxVideos.whatNext,
+            videoDuration: 720,
             isPreview: false,
             content:
-              'Bridge the gap between design and code: automatically generate CSS variables and Tailwind theme configurations from Figma tokens.',
-          },
-          {
-            title: '3.2 Component Documentation & Storybook Sync',
-            position: 2,
-            videoUrl: driveVideos.v8,
-            videoDuration: 800,
-            isPreview: false,
-            content:
-              'Setting up zeroheight style guides and syncing component specifications directly with frontend engineer Storybooks.',
-          },
-          {
-            title: '3.3 Final Capstone: Enterprise Fintech Design System',
-            position: 3,
-            videoUrl: driveVideos.v9,
-            videoDuration: 1250,
-            isPreview: false,
-            content:
-              'Complete walkthrough review of an end-to-end banking design system ready for production engineering deployment.',
+              'Strategic guidance on crafting case studies that convert, positioning yourself as a product designer, acquiring high-ticket freelance clients, and career trajectory.',
           },
         ],
       },

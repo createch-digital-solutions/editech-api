@@ -4,8 +4,10 @@ import { CourseLevel, OutcomeTag } from '@prisma/client';
 
 export class GenerateCourseDto {
   @ApiProperty({
-    description: 'Prompt describing the desired course topic, audience, and scope',
-    example: 'Build production microservices with NestJS, Apache Kafka, and Docker for intermediate developers',
+    description:
+      'Prompt describing the desired course topic, audience, and scope',
+    example:
+      'Build production microservices with NestJS, Apache Kafka, and Docker for intermediate developers',
   })
   @IsString()
   @MinLength(10)
@@ -21,7 +23,10 @@ export class GenerateCourseDto {
   @IsEnum(OutcomeTag)
   outcomeTag?: OutcomeTag = OutcomeTag.GET_A_JOB;
 
-  @ApiPropertyOptional({ description: 'Target category', example: 'Backend Development' })
+  @ApiPropertyOptional({
+    description: 'Target category',
+    example: 'Backend Development',
+  })
   @IsOptional()
   @IsString()
   category?: string;

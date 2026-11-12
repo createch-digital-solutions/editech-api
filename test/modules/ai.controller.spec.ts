@@ -11,7 +11,12 @@ describe('AiController', () => {
   const mockPrismaService = {
     enrolment: { findUnique: jest.fn() },
     lesson: { findUnique: jest.fn() },
-    aiConversation: { findMany: jest.fn(), findFirst: jest.fn(), create: jest.fn(), update: jest.fn() },
+    aiConversation: {
+      findMany: jest.fn(),
+      findFirst: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+    },
   };
 
   const mockAiProvider = {

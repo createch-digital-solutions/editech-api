@@ -33,7 +33,9 @@ export class AiService {
   getHealth() {
     const configured = this.aiProvider.hasValidKey();
     const model = this.aiProvider.getModelName();
-    this.logger.log(`[AI Health] Status: ok, model: ${model}, keyConfigured: ${configured}`);
+    this.logger.log(
+      `[AI Health] Status: ok, model: ${model}, keyConfigured: ${configured}`,
+    );
     return {
       status: 'ok',
       module: 'ai',
@@ -46,7 +48,9 @@ export class AiService {
   /**
    * Generates a complete, structured course outline with modules, lessons, and quizzes.
    */
-  async generateCourseScaffold(dto: GenerateCourseDto): Promise<CourseScaffold> {
+  async generateCourseScaffold(
+    dto: GenerateCourseDto,
+  ): Promise<CourseScaffold> {
     const model = this.aiProvider.getModel();
     const modelName = this.aiProvider.getModelName();
 
@@ -70,7 +74,9 @@ export class AiService {
     });
 
     try {
-      this.logger.log(`[AI Course Scaffold] Calling Gemini (${modelName}) with structured Zod schema...`);
+      this.logger.log(
+        `[AI Course Scaffold] Calling Gemini (${modelName}) with structured Zod schema...`,
+      );
       const { object } = await generateObject({
         model,
         schema: CourseScaffoldSchema,
@@ -183,7 +189,9 @@ export class AiService {
 
     // 4. Stream response using Vercel AI SDK with robust error capturing
     try {
-      this.logger.log(`[Aria Stream Start] Initiating stream with ${modelName}...`);
+      this.logger.log(
+        `[Aria Stream Start] Initiating stream with ${modelName}...`,
+      );
       const result = streamText({
         model,
         system: systemPrompt,
@@ -243,7 +251,9 @@ export class AiService {
    * Retrieves chat history for a learner
    */
   async getConversations(learnerId: string, lessonId?: string) {
-    this.logger.log(`[Aria History] Fetching conversations for learnerId=${learnerId}, lessonId=${lessonId || 'all'}`);
+    this.logger.log(
+      `[Aria History] Fetching conversations for learnerId=${learnerId}, lessonId=${lessonId || 'all'}`,
+    );
     return this.prisma.aiConversation.findMany({
       where: {
         learnerId,
@@ -261,10 +271,7 @@ export class AiService {
     history: TutorChatDto['messages'] = [],
     reply: string = '',
   ) {
-    const updatedMessages = [
-      ...history,
-      { role: 'assistant', content: reply },
-    ];
+    const updatedMessages = [...history, { role: 'assistant', content: reply }];
 
     const existing = await this.prisma.aiConversation.findFirst({
       where: {
@@ -316,7 +323,8 @@ export class AiService {
               type: LessonType.VIDEO,
               position: 1,
               estimatedDuration: 12,
-              contentSummary: 'Overview of system architecture and prerequisites.',
+              contentSummary:
+                'Overview of system architecture and prerequisites.',
             },
             {
               title: 'Environment Setup & Docker Compose',
@@ -341,7 +349,8 @@ export class AiService {
                     'Manage frontend CSS stylesheets',
                   ],
                   correctOptionIndex: 0,
-                  explanation: 'Message brokers decouple producers and consumers asynchronously.',
+                  explanation:
+                    'Message brokers decouple producers and consumers asynchronously.',
                 },
               ],
             },

@@ -39,8 +39,11 @@ export const PERSONA_INSTRUCTIONS: Record<TutorPersona, string> = {
 };
 
 export function buildTutorSystemPrompt(params: TutorPromptParams): string {
-  const { persona, courseTitle, lessonTitle, lessonType, lessonContent } = params;
-  const personaStyle = PERSONA_INSTRUCTIONS[persona] || PERSONA_INSTRUCTIONS[TutorPersona.FRIENDLY];
+  const { persona, courseTitle, lessonTitle, lessonType, lessonContent } =
+    params;
+  const personaStyle =
+    PERSONA_INSTRUCTIONS[persona] ||
+    PERSONA_INSTRUCTIONS[TutorPersona.FRIENDLY];
 
   // Scope 2: In-Classroom Socratic Tutor (Course & Lesson context present)
   if (courseTitle) {
