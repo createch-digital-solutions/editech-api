@@ -38,8 +38,13 @@ export class LearnerController {
   @Get('enrolments')
   @ApiBearerAuth()
   @Roles(Role.LEARNER, Role.INSTRUCTOR, Role.ADMIN)
-  @ApiOperation({ summary: 'Get all enrolled courses and progress for the current learner' })
-  @ApiResponse({ status: 200, description: 'List of course enrolments returned successfully' })
+  @ApiOperation({
+    summary: 'Get all enrolled courses and progress for the current learner',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of course enrolments returned successfully',
+  })
   getEnrolments(@CurrentUser() user: AuthenticatedUser) {
     return this.learnerService.getEnrolments(user.id);
   }
@@ -47,9 +52,14 @@ export class LearnerController {
   @Get('enrolments/:courseId')
   @ApiBearerAuth()
   @Roles(Role.LEARNER, Role.INSTRUCTOR, Role.ADMIN)
-  @ApiOperation({ summary: 'Check enrolment status and progress for a specific course' })
+  @ApiOperation({
+    summary: 'Check enrolment status and progress for a specific course',
+  })
   @ApiParam({ name: 'courseId', description: 'Course UUID or slug' })
-  @ApiResponse({ status: 200, description: 'Enrolment status details or null if not enrolled' })
+  @ApiResponse({
+    status: 200,
+    description: 'Enrolment status details or null if not enrolled',
+  })
   getEnrolmentByCourse(
     @Param('courseId') courseId: string,
     @CurrentUser() user: AuthenticatedUser,
@@ -61,10 +71,15 @@ export class LearnerController {
   @ApiBearerAuth()
   @Roles(Role.LEARNER, Role.INSTRUCTOR, Role.ADMIN)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Enroll in a course by course ID or slug (URL parameter)' })
+  @ApiOperation({
+    summary: 'Enroll in a course by course ID or slug (URL parameter)',
+  })
   @ApiParam({ name: 'courseId', description: 'Course UUID or slug' })
   @ApiResponse({ status: 200, description: 'Successfully enrolled in course' })
-  @ApiResponse({ status: 403, description: 'Payment required for paid courses' })
+  @ApiResponse({
+    status: 403,
+    description: 'Payment required for paid courses',
+  })
   @ApiResponse({ status: 404, description: 'Course not found' })
   enrollInCourseByParam(
     @Param('courseId') courseId: string,
@@ -77,9 +92,14 @@ export class LearnerController {
   @ApiBearerAuth()
   @Roles(Role.LEARNER, Role.INSTRUCTOR, Role.ADMIN)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Enroll in a course by request body (JSON payload)' })
+  @ApiOperation({
+    summary: 'Enroll in a course by request body (JSON payload)',
+  })
   @ApiResponse({ status: 200, description: 'Successfully enrolled in course' })
-  @ApiResponse({ status: 403, description: 'Payment required for paid courses' })
+  @ApiResponse({
+    status: 403,
+    description: 'Payment required for paid courses',
+  })
   @ApiResponse({ status: 404, description: 'Course not found' })
   enrollInCourseByBody(
     @Body() dto: EnrollCourseDto,

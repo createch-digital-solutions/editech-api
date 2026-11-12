@@ -5,7 +5,12 @@ import {
   ForbiddenException,
   Logger,
 } from '@nestjs/common';
-import { CourseStatus, EnrolmentStatus, TransactionStatus, Role } from '@prisma/client';
+import {
+  CourseStatus,
+  EnrolmentStatus,
+  TransactionStatus,
+  Role,
+} from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 @Injectable()
@@ -25,7 +30,7 @@ export class LearnerService {
   async enrollInCourse(
     learnerId: string,
     courseIdOrSlug: string,
-    userRole?: Role | string,
+    userRole?: Role,
   ) {
     this.logger.log(
       `Learner ${learnerId} enrolling in course ${courseIdOrSlug} (role: ${userRole ?? 'unknown'})`,

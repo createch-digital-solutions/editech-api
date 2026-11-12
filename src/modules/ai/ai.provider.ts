@@ -14,8 +14,7 @@ export class AiProvider {
 
   private initModel() {
     const apiKey =
-      process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
-      process.env.GEMINI_API_KEY;
+      process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY;
 
     const modelName = this.getModelName();
 
@@ -31,9 +30,14 @@ export class AiProvider {
       const google = createGoogleGenerativeAI({ apiKey });
       this.model = google(modelName);
       this.isConfigured = true;
-      this.logger.log(`AI Provider initialized successfully with model: ${modelName} (Key prefix: ${apiKey.slice(0, 6)}...)`);
+      this.logger.log(
+        `AI Provider initialized successfully with model: ${modelName} (Key prefix: ${apiKey.slice(0, 6)}...)`,
+      );
     } catch (err) {
-      this.logger.error(`Failed to initialize AI Provider with model ${modelName}`, err);
+      this.logger.error(
+        `Failed to initialize AI Provider with model ${modelName}`,
+        err,
+      );
       this.isConfigured = false;
     }
   }

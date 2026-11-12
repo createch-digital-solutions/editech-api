@@ -43,7 +43,8 @@ export class AiController {
   @Roles(Role.INSTRUCTOR, Role.ADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Generate structured curriculum outline (modules, lessons, quizzes)',
+    summary:
+      'Generate structured curriculum outline (modules, lessons, quizzes)',
   })
   @ApiResponse({
     status: 200,

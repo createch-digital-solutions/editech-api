@@ -92,8 +92,12 @@ export class AiCourseBuilderProcessor extends WorkerHost {
                 title: les.title,
                 position: les.position,
                 type: les.type,
-                videoDuration: les.type === LessonType.VIDEO ? les.estimatedDuration * 60 : null,
-                content: les.type === LessonType.TEXT ? les.contentSummary : null,
+                videoDuration:
+                  les.type === LessonType.VIDEO
+                    ? les.estimatedDuration * 60
+                    : null,
+                content:
+                  les.type === LessonType.TEXT ? les.contentSummary : null,
                 isPublished: false,
               },
             });

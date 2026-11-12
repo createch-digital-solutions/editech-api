@@ -1,22 +1,25 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { jest } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Role, EnrolmentStatus } from '@prisma/client';
+import { Role, EnrolmentStatus, UserStatus } from '@prisma/client';
 import { LearnerController } from '../../src/modules/learner/learner.controller.js';
 import { LearnerService } from '../../src/modules/learner/learner.service.js';
 import { PrismaService } from '../../src/modules/prisma/prisma.service.js';
+import type { AuthenticatedUser } from '../../src/common/decorators/current-user.decorator.js';
 
 describe('LearnerController', () => {
   let controller: LearnerController;
   let service: LearnerService;
 
-  const mockUser = {
+  const mockUser: AuthenticatedUser = {
     id: 'user-uuid-123',
     clerkId: 'user_clerk_123',
     email: 'learner@editech.com',
     firstName: 'Tunde',
     lastName: 'Ade',
     role: Role.LEARNER,
-    status: 'ACTIVE' as any,
+    status: UserStatus.ACTIVE,
+    avatarUrl: null,
   };
 
   const mockEnrolmentResponse = {
@@ -107,13 +110,22 @@ describe('LearnerController', () => {
   });
 
   it('should get single course enrolment status', async () => {
-    const result = await controller.getEnrolmentByCourse('ui-ux-design-systems', mockUser);
-    expect(service.getEnrolmentByCourse).toHaveBeenCalledWith(mockUser.id, 'ui-ux-design-systems');
+    const result = await controller.getEnrolmentByCourse(
+      'ui-ux-design-systems',
+      mockUser,
+    );
+    expect(service.getEnrolmentByCourse).toHaveBeenCalledWith(
+      mockUser.id,
+      'ui-ux-design-systems',
+    );
     expect(result?.courseId).toBe('course-uuid-1');
   });
 
   it('should enroll in course via URL parameter', async () => {
-    const result = await controller.enrollInCourseByParam('ui-ux-design-systems', mockUser);
+    const result = await controller.enrollInCourseByParam(
+      'ui-ux-design-systems',
+      mockUser,
+    );
     expect(service.enrollInCourse).toHaveBeenCalledWith(
       mockUser.id,
       'ui-ux-design-systems',
