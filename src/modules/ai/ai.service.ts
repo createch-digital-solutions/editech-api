@@ -2,6 +2,8 @@ import {
   Injectable,
   ForbiddenException,
   NotFoundException,
+  HttpException,
+  HttpStatus,
   Logger,
 } from '@nestjs/common';
 import { generateObject, streamText } from 'ai';
@@ -19,7 +21,12 @@ import {
   buildTutorSystemPrompt,
 } from './prompts/index.js';
 import type { Response } from 'express';
-import { CourseLevel, OutcomeTag, LessonType } from '@prisma/client';
+import { Role, CourseLevel, OutcomeTag, LessonType } from '@prisma/client';
+import {
+  AI_QUOTA_LIMITS,
+  AI_ERROR_CODES,
+} from './ai.constants.js';
+import { TodayUsageResponseDto } from './dto/today-usage.dto.js';
 
 @Injectable()
 export class AiService {
@@ -46,11 +53,132 @@ export class AiService {
   }
 
   /**
+   * Returns normalized UTC midnight for current day
+   */
+  getUtcToday(): Date {
+    const now = new Date();
+    return new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+    );
+  }
+
+  /**
+   * Retrieves today's AI usage and remaining quota for a user (Phase 15 #43)
+   */
+  async getTodayUsage(
+    userId: string,
+    role: Role = Role.LEARNER,
+  ): Promise<TodayUsageResponseDto> {
+    const today = this.getUtcToday();
+    const usage = await this.prisma.aiUsage.findUnique({
+      where: {
+        userId_date: {
+          userId,
+          date: today,
+        },
+      },
+    });
+
+    const limits = AI_QUOTA_LIMITS[role] || AI_QUOTA_LIMITS[Role.LEARNER];
+    const exchanges = usage?.exchanges ?? 0;
+    const tokensUsed = usage?.tokensUsed ?? 0;
+
+    return {
+      date: today,
+      exchanges,
+      tokensUsed,
+      limits: {
+        maxExchanges: limits.maxExchanges,
+        maxTokens: limits.maxTokens,
+      },
+      remaining: {
+        exchanges: Math.max(0, limits.maxExchanges - exchanges),
+        tokens: Math.max(0, limits.maxTokens - tokensUsed),
+      },
+    };
+  }
+
+  /**
+   * Pre-flight guardrail: validates that user has not exceeded daily quota.
+   * Throws 429 Too Many Requests if quota is depleted.
+   */
+  async checkQuota(
+    userId: string,
+    role: Role = Role.LEARNER,
+  ): Promise<TodayUsageResponseDto> {
+    const usage = await this.getTodayUsage(userId, role);
+
+    if (usage.remaining.exchanges <= 0 || usage.remaining.tokens <= 0) {
+      const isInstructor = role === Role.INSTRUCTOR;
+      const errorCode = isInstructor
+        ? AI_ERROR_CODES.RATE_LIMIT_EXCEEDED
+        : AI_ERROR_CODES.DAILY_LIMIT_REACHED;
+
+      const errorMessage = isInstructor
+        ? `Daily AI generation limit reached (${usage.limits.maxExchanges} generations or ${usage.limits.maxTokens} tokens per day). Please try again tomorrow.`
+        : `Daily AI tutor question limit reached (${usage.limits.maxExchanges} questions per day). Please try again tomorrow.`;
+
+      this.logger.warn(
+        `[AI Quota Exceeded] Blocked request for userId=${userId}, role=${role}, exchanges=${usage.exchanges}/${usage.limits.maxExchanges}, tokens=${usage.tokensUsed}/${usage.limits.maxTokens}`,
+      );
+
+      throw new HttpException(
+        {
+          code: errorCode,
+          message: errorMessage,
+        },
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+
+    return usage;
+  }
+
+  /**
+   * Post-flight recorder: atomic upsert to accumulate tokens & exchange count
+   */
+  async recordUsage(userId: string, tokens: number = 0) {
+    const today = this.getUtcToday();
+    const tokenIncrement = Math.max(0, tokens);
+
+    try {
+      return await this.prisma.aiUsage.upsert({
+        where: {
+          userId_date: {
+            userId,
+            date: today,
+          },
+        },
+        create: {
+          userId,
+          date: today,
+          exchanges: 1,
+          tokensUsed: tokenIncrement,
+        },
+        update: {
+          exchanges: { increment: 1 },
+          tokensUsed: { increment: tokenIncrement },
+        },
+      });
+    } catch (err) {
+      this.logger.error(
+        `Failed to record AI usage for userId=${userId}: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+  }
+
+  /**
    * Generates a complete, structured course outline with modules, lessons, and quizzes.
    */
   async generateCourseScaffold(
     dto: GenerateCourseDto,
+    userId?: string,
+    role: Role = Role.INSTRUCTOR,
   ): Promise<CourseScaffold> {
+    if (userId) {
+      await this.checkQuota(userId, role);
+    }
+
     const model = this.aiProvider.getModel();
     const modelName = this.aiProvider.getModelName();
 
@@ -62,6 +190,9 @@ export class AiService {
       this.logger.warn(
         `AI Provider not configured with valid API key. Returning deterministic scaffold stub for development.`,
       );
+      if (userId) {
+        await this.recordUsage(userId, 500);
+      }
       return this.generateStubScaffold(dto);
     }
 
@@ -77,7 +208,7 @@ export class AiService {
       this.logger.log(
         `[AI Course Scaffold] Calling Gemini (${modelName}) with structured Zod schema...`,
       );
-      const { object } = await generateObject({
+      const { object, usage } = await generateObject({
         model,
         schema: CourseScaffoldSchema,
         system: systemPrompt,
@@ -87,6 +218,13 @@ export class AiService {
       this.logger.log(
         `[AI Course Scaffold Complete] Generated course "${object.title}" with ${object.sections.length} sections and ${object.tags.length} tags.`,
       );
+
+      if (userId) {
+        const totalTokens =
+          usage?.totalTokens ?? Math.ceil(JSON.stringify(object).length / 4);
+        await this.recordUsage(userId, totalTokens);
+      }
+
       return object;
     } catch (err: unknown) {
       const errorMessage =
@@ -96,6 +234,9 @@ export class AiService {
         err instanceof Error ? err.stack : undefined,
       );
       this.logger.warn('Falling back to deterministic scaffold stub.');
+      if (userId) {
+        await this.recordUsage(userId, 500);
+      }
       return this.generateStubScaffold(dto);
     }
   }
@@ -108,7 +249,11 @@ export class AiService {
     learnerId: string,
     dto: TutorChatDto,
     res: Response,
+    role: Role = Role.LEARNER,
   ): Promise<void> {
+    // 0. Pre-flight quota check: ensures learner has remaining exchanges today
+    await this.checkQuota(learnerId, role);
+
     const model = this.aiProvider.getModel();
     const modelName = this.aiProvider.getModelName();
     const latestMsg = dto.messages[dto.messages.length - 1];
@@ -184,6 +329,7 @@ export class AiService {
         `Regarding your question, keep practicing and review the course material!`;
       res.write(fallbackReply);
       res.end();
+      await this.recordUsage(learnerId, 100);
       return;
     }
 
@@ -217,7 +363,10 @@ export class AiService {
         `[Aria Stream Complete] Delivered ${chunkCount} chunks (~${fullReply.length} chars) to learnerId=${learnerId}`,
       );
 
-      // 5. Asynchronously persist conversation history
+      // 5. Asynchronously persist conversation history and record usage
+      const estimatedTokens = Math.ceil((fullReply.length + 100) / 4);
+      await this.recordUsage(learnerId, estimatedTokens);
+
       if (fullReply.trim()) {
         this.persistConversation(
           learnerId,
