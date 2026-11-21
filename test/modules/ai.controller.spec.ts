@@ -6,6 +6,7 @@ import { AiController } from '../../src/modules/ai/ai.controller.js';
 import { AiService } from '../../src/modules/ai/ai.service.js';
 import { AiProvider } from '../../src/modules/ai/ai.provider.js';
 import { PrismaService } from '../../src/modules/prisma/prisma.service.js';
+import { TutorPersona } from '../../src/modules/ai/dto/tutor-chat.dto.js';
 
 describe('AiController', () => {
   let controller: AiController;
@@ -164,7 +165,7 @@ describe('AiController', () => {
         mockUser as any,
         {
           messages: [{ role: 'user', content: 'Explain props' }],
-          persona: 'friendly',
+          persona: TutorPersona.FRIENDLY,
         },
         mockRes as any,
       ),
@@ -175,7 +176,7 @@ describe('AiController', () => {
         mockUser as any,
         {
           messages: [{ role: 'user', content: 'Explain props' }],
-          persona: 'friendly',
+          persona: TutorPersona.FRIENDLY,
         },
         mockRes as any,
       );
