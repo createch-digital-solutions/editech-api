@@ -23,6 +23,7 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import type { AuthenticatedUser } from '../../common/decorators/current-user.decorator.js';
 import { GenerateCourseDto } from './dto/generate-course.dto.js';
 import { TutorChatDto } from './dto/tutor-chat.dto.js';
+import { TodayUsageResponseDto } from './dto/today-usage.dto.js';
 import type { Response } from 'express';
 
 @ApiTags('AI')
@@ -50,8 +51,16 @@ export class AiController {
     status: 200,
     description: 'Structured course syllabus generated successfully',
   })
-  async generateCourseScaffold(@Body() dto: GenerateCourseDto) {
-    return this.aiService.generateCourseScaffold(dto);
+  @ApiResponse({
+    status: 429,
+    description:
+      'AI_RATE_LIMIT_EXCEEDED: Daily instructor AI generation quota reached',
+  })
+  async generateCourseScaffold(
+    @Body() dto: GenerateCourseDto,
+    @CurrentUser() user?: AuthenticatedUser,
+  ) {
+    return this.aiService.generateCourseScaffold(dto, user?.id, user?.role);
   }
 
   @Post('tutor/chat')
@@ -64,12 +73,33 @@ export class AiController {
     status: 200,
     description: 'Streaming token chunk response',
   })
+  @ApiResponse({
+    status: 429,
+    description:
+      'DAILY_LIMIT_REACHED: Daily learner AI tutor exchange limit reached',
+  })
   async streamTutorChat(
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: TutorChatDto,
     @Res() res: Response,
   ) {
-    return this.aiService.streamTutorChat(user.id, dto, res);
+    return this.aiService.streamTutorChat(user.id, dto, res, user.role);
+  }
+
+  @Get('usage/today')
+  @ApiBearerAuth()
+  @Roles(Role.LEARNER, Role.INSTRUCTOR, Role.ADMIN)
+  @ApiOperation({
+    summary:
+      "Get current user's AI token and exchange usage with remaining quota for today (Phase 15 #43)",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Today's AI usage and quota returned",
+    type: TodayUsageResponseDto,
+  })
+  async getTodayUsage(@CurrentUser() user: AuthenticatedUser) {
+    return this.aiService.getTodayUsage(user.id, user.role);
   }
 
   @Get('conversations')
