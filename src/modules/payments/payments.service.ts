@@ -86,16 +86,27 @@ export class PaymentsService {
    */
   async queueWebhook(payload: PaymentWebhookJobPayload) {
     this.logger.log(`Enqueuing payment webhook from ${payload.provider}`);
-    await this.paymentsQueue.add(JOB_NAMES.PAYMENTS.PROCESS_WEBHOOK, payload, {
-      attempts: 5,
-      backoff: {
-        type: 'exponential',
-        delay: 3000,
-      },
-      removeOnComplete: true,
-      removeOnFail: 50,
-    });
-
-    return { received: true, queued: true };
+    try {
+      await this.paymentsQueue.add(
+        JOB_NAMES.PAYMENTS.PROCESS_WEBHOOK,
+        payload,
+        {
+          attempts: 5,
+          backoff: {
+            type: 'exponential',
+            delay: 3000,
+          },
+          removeOnComplete: true,
+          removeOnFail: 50,
+        },
+      );
+      return { received: true, queued: true };
+    } catch (err) {
+      this.logger.warn(
+        `Failed to enqueue payment webhook (Redis offline / degraded): ${err instanceof Error ? err.message : String(err)}`,
+      );
+      // Return received: true so Paystack/Stripe does not flood webhook retries when Redis is temporarily offline
+      return { received: true, queued: false, mode: 'fallback' };
+    }
   }
 }

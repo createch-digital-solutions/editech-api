@@ -18,14 +18,25 @@ export class QueueService {
    */
   async queueEmail(payload: EmailJobPayload) {
     this.logger.log(`Enqueueing transactional email to: ${payload.to}`);
-    return this.emailQueue.add(JOB_NAMES.EMAIL.SEND_TRANSACTIONAL, payload, {
-      attempts: 3,
-      backoff: {
-        type: 'exponential',
-        delay: 2000,
-      },
-      removeOnComplete: true,
-      removeOnFail: 100,
-    });
+    try {
+      return await this.emailQueue.add(
+        JOB_NAMES.EMAIL.SEND_TRANSACTIONAL,
+        payload,
+        {
+          attempts: 3,
+          backoff: {
+            type: 'exponential',
+            delay: 2000,
+          },
+          removeOnComplete: true,
+          removeOnFail: 100,
+        },
+      );
+    } catch (err) {
+      this.logger.warn(
+        `Failed to enqueue email to ${payload.to} (Redis offline / degraded): ${err instanceof Error ? err.message : String(err)}`,
+      );
+      return null;
+    }
   }
 }
