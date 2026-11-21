@@ -29,9 +29,15 @@ export class TodayUsageResponseDto {
   @ApiProperty({ example: 4500, description: 'Number of tokens used today' })
   tokensUsed!: number;
 
-  @ApiProperty({ type: QuotaDetailDto, description: 'Configured limits for user role' })
+  @ApiProperty({
+    type: QuotaDetailDto,
+    description: 'Configured limits for user role',
+  })
   limits!: QuotaDetailDto;
 
-  @ApiProperty({ type: QuotaRemainingDto, description: 'Remaining quota available today' })
+  @ApiProperty({
+    type: QuotaRemainingDto,
+    description: 'Remaining quota available today',
+  })
   remaining!: QuotaRemainingDto;
 }

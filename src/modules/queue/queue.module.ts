@@ -58,7 +58,8 @@ const getRetryStrategy = () => (times: number) => {
 
         const host = configService.get<string>('REDIS_HOST') || '127.0.0.1';
         const port = Number(configService.get<number>('REDIS_PORT')) || 6379;
-        const password = configService.get<string>('REDIS_PASSWORD') || undefined;
+        const password =
+          configService.get<string>('REDIS_PASSWORD') || undefined;
 
         logger.log(
           `BullMQ configured with fallback host: ${host}:${port} (Set REDIS_URL on Render/Upstash for production)`,

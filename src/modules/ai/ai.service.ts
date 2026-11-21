@@ -22,10 +22,7 @@ import {
 } from './prompts/index.js';
 import type { Response } from 'express';
 import { Role, CourseLevel, OutcomeTag, LessonType } from '@prisma/client';
-import {
-  AI_QUOTA_LIMITS,
-  AI_ERROR_CODES,
-} from './ai.constants.js';
+import { AI_QUOTA_LIMITS, AI_ERROR_CODES } from './ai.constants.js';
 import { TodayUsageResponseDto } from './dto/today-usage.dto.js';
 
 @Injectable()

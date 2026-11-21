@@ -53,7 +53,8 @@ export class AiController {
   })
   @ApiResponse({
     status: 429,
-    description: 'AI_RATE_LIMIT_EXCEEDED: Daily instructor AI generation quota reached',
+    description:
+      'AI_RATE_LIMIT_EXCEEDED: Daily instructor AI generation quota reached',
   })
   async generateCourseScaffold(
     @Body() dto: GenerateCourseDto,
@@ -74,7 +75,8 @@ export class AiController {
   })
   @ApiResponse({
     status: 429,
-    description: 'DAILY_LIMIT_REACHED: Daily learner AI tutor exchange limit reached',
+    description:
+      'DAILY_LIMIT_REACHED: Daily learner AI tutor exchange limit reached',
   })
   async streamTutorChat(
     @CurrentUser() user: AuthenticatedUser,
